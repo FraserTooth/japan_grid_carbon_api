@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+import django_heroku
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -122,5 +124,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Configure Django App for Heroku.
-import django_heroku
 django_heroku.settings(locals())
