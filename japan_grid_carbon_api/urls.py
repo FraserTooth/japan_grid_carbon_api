@@ -4,11 +4,6 @@ from django.urls import include, path
 from django.urls import path
 from japan_grid_carbon_api import views
 
-# urlpatterns = [
-#     path("", views.home, name="home"),
-# ]
-
-
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
