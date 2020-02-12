@@ -23,7 +23,9 @@ carbonIntensity = {
     "kWh_biomass": factors["Biomass"],
     "kWh_solar_output": factors["Solar"],
     "kWh_wind_output": factors["Wind"],
-    "kWh_pumped_storage": factors["Pumped Storage"]
+    "kWh_pumped_storage": factors["Pumped Storage"],
+    # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
+    "kWh_interconnectors": 850
 }
 
 print(carbonIntensity)
@@ -31,10 +33,6 @@ print(carbonIntensity)
 
 def carbonCalculation(row):
     # Reference: https://github.com/carbon-intensity/methodology/blob/master/Carbon%20Intensity%20Forecast%20Methodology.pdf
-
-    # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably 800 tbh
-    carbonIntensity["kWh_interconnectors"] = 800
-
     nuclearIntensity = row["kWh_nuclear"] * carbonIntensity["kWh_nuclear"]
     fossilIntensity = row["kWh_fossil"] * carbonIntensity["kWh_fossil"]
     hydroIntensity = row["kWh_hydro"] * carbonIntensity["kWh_hydro"]
