@@ -6,15 +6,13 @@ import matplotlib.pyplot as plt
 
 CSV_URL = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
 
-# Get Carbon Intensity
 
+# Get And Calculate Carbon Intensity
 response = requests.get(
     "https://api.carbonintensity.org.uk/intensity/factors")
 
 json = response.json()
-
 factors = json["data"][0]
-
 carbonIntensity = {
     "kWh_nuclear": factors["Nuclear"],
     "kWh_fossil": (factors["Coal"] + factors["Oil"])/2,
@@ -27,8 +25,7 @@ carbonIntensity = {
     # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
     "kWh_interconnectors": 850
 }
-
-print(carbonIntensity)
+# print(carbonIntensity)
 
 
 def carbonCalculation(row):
@@ -78,7 +75,7 @@ def renameHeader(header):
 
 print("Reading CSV")
 df = pd.read_csv(CSV_URL, skiprows=2, encoding="cp932",
-                 parse_dates=[[0, 1]], keep_date_col=True)
+                 parse_dates=[[0, 1]])
 
 print("Renaming Columns")
 df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
@@ -86,9 +83,21 @@ df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
 
 print("Calculating Carbon Intensity")
 df["carbon_intensity"] = df.apply(lambda row: carbonCalculation(row), axis=1)
+# print(df)
 
-print(df)
+# Create a Daily Average of Carbon Intensity Against the Time of Day
+print("Creating Daily Averages")
+times = pd.DatetimeIndex(df.datetime)
+# print(times.hour)
+dailyAverage = df.groupby([times.hour]).mean()
+# print(dailyAverage)
 
+# Plot Year's Carbon Intensity
 plot = df.plot.line(x="datetime", y="carbon_intensity")
 fig = plot.get_figure()
 fig.savefig("scraper/plots/test.png")
+
+# Plot Daily Carbon Intensity
+dailyPlot = dailyAverage.plot.line(y="carbon_intensity")
+dailyfig = dailyPlot.get_figure()
+dailyfig.savefig("scraper/plots/dailytest.png")
