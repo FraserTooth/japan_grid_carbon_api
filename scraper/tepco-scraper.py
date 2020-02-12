@@ -6,14 +6,14 @@ import pandas as pd
 CSV_URL = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
 
 
-def renameHeaders(headerList):
-
-    headerList[0] = "date"
-
-    headerList[1] = "time"
-    headerList[2] = "kWh_demand"
+def renameHeader(header):
+    print(header)
 
     translations = {
+        "Unnamed: 0": "date",
+        "Unnamed: 1": "time",
+        "Unnamed: 0_Unnamed: 1": "datetime",
+        "Unnamed: 2": "kWh_demand",
         "原子力": "kWh_nuclear",
         "火力": "kWh_fossil",
         "水力": "kWh_hydro",
@@ -29,30 +29,17 @@ def renameHeaders(headerList):
         "合計": "kWh_total"
     }
 
-    def translate(x):
-        if x in translations:
-            return translations[x]
-        return x
-
-    return list(map(translate, headerList))
+    if header in translations:
+        return translations[header]
+    return header
 
 
-with requests.Session() as s:
-    download = s.get(CSV_URL)
+df = pd.read_csv(CSV_URL, skiprows=2, encoding="cp932", parse_dates=[[0, 1]])
 
-    decoded_content = download.content.decode('cp932')
-    # decoded_content = download.content
+df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
+# headers = renameHeaders(energyData[2])
 
-    # print(decoded_content[0:100])
+print(df)
 
-    cr = csv.reader(decoded_content.splitlines(), delimiter=',')
-    energyData = list(cr)
-    headers = renameHeaders(energyData[2])
-
-    print(headers)
-    data = energyData[3:]
-    df = pd.DataFrame(data, columns=headers)
-    print(df)
-
-    # for row in energyData[3:20]:
-    #     print(row)
+# df["datetime"] = pd.to_datetime(df['date'] + ' ' + df['time'])
+# print(df.dtypes)
