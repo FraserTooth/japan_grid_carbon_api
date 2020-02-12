@@ -2,12 +2,12 @@ import csv
 import requests
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 CSV_URL = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
 
 
 def renameHeader(header):
-    print(header)
 
     translations = {
         "Unnamed: 0": "date",
@@ -39,7 +39,6 @@ df = pd.read_csv(CSV_URL, skiprows=2, encoding="cp932", parse_dates=[[0, 1]])
 df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
 # headers = renameHeaders(energyData[2])
 
-print(df)
-
-# df["datetime"] = pd.to_datetime(df['date'] + ' ' + df['time'])
-# print(df.dtypes)
+plot = df.plot.line(x="datetime")
+fig = plot.get_figure()
+fig.savefig("scraper/plots/test.png")

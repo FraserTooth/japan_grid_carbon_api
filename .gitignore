@@ -199,3 +199,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Other Stuff
+scraper/plots
