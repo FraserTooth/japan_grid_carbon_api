@@ -11,11 +11,21 @@ CSV_URL = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
 response = requests.get(
     "https://api.carbonintensity.org.uk/intensity/factors")
 
+# Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
+fossilFuelStations = {
+    "lng": 4.38+3.6+3.6+5.16+3.42+3.541+1.15+2+1.14,
+    "oil": 5.66+1.05+4.40,
+    "coal": 2
+}
+totalFossil = fossilFuelStations["lng"] + \
+    fossilFuelStations["oil"]+fossilFuelStations["coal"]
+
 json = response.json()
 factors = json["data"][0]
+print(factors)
 carbonIntensity = {
     "kWh_nuclear": factors["Nuclear"],
-    "kWh_fossil": (factors["Coal"] + factors["Oil"])/2,
+    "kWh_fossil": (factors["Coal"]*fossilFuelStations["coal"] + factors["Oil"]*fossilFuelStations["oil"] + factors["Gas (Open Cycle)"]*fossilFuelStations["lng"])/totalFossil,
     "kWh_hydro": factors["Hydro"],
     "kWh_geothermal": 0,  # Probably
     "kWh_biomass": factors["Biomass"],
