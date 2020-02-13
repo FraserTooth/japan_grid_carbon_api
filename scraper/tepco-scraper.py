@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-CSV_URL = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
+CSV_URL_2019 = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
+CSV_URL_2018 = 'http://www.tepco.co.jp/forecast/html/images/area-2018.csv'
+CSV_URL_2017 = 'http://www.tepco.co.jp/forecast/html/images/area-2017.csv'
+CSV_URL_2016 = 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv'
 
 
 # Get And Calculate Carbon Intensity
@@ -83,13 +86,42 @@ def renameHeader(header):
     return header
 
 
+dtypes = {
+    "Unnamed: 2": int,
+    "火力": int,
+    "水力": int,
+    "地熱": int,
+    "バイオマス": int,
+    "太陽光発電実績": int,
+    "太陽光出力制御量": int,
+    "風力発電実績": int,
+    "風力出力制御量": int,
+    "揚水": int,
+    "連系線": int,
+    "合計": int
+}
+
 print("Reading CSV")
-df = pd.read_csv(CSV_URL, skiprows=2, encoding="cp932",
-                 parse_dates=[[0, 1]])
+print("---2019")
+df2019 = pd.read_csv(CSV_URL_2019, skiprows=2, encoding="cp932",
+                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+df2018 = pd.read_csv(CSV_URL_2018, skiprows=2, encoding="cp932",
+                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+print("---2018")
+df2017 = pd.read_csv(CSV_URL_2017, skiprows=2, encoding="cp932",
+                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+print("---2017")
+df2016 = pd.read_csv(CSV_URL_2016, skiprows=2, encoding="cp932",
+                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+print("---2016")
+
+df = pd.concat([df2016, df2017, df2018, df2019])
+
 
 print("Renaming Columns")
 df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
-# headers = renameHeaders(energyData[2])
+# print(df.dtypes)
+# print(df)
 
 print("Calculating Carbon Intensity")
 df["carbon_intensity"] = df.apply(lambda row: carbonCalculation(row), axis=1)
