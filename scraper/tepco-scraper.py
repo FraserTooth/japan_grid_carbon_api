@@ -178,7 +178,7 @@ for i in range(len(tableau20)):
     tableau20[i] = (r / 255., g / 255., b / 255.)
 
 dailyMonthPlot = dailyAverageByMonth.plot.line(
-    color=tableau20, title='Carbon Intensity over a Given Day, By Month (2016-Now)')
+    color=tableau20, title='Carbon Intensity in Tokyo over a Given Day, By Month (2016-Now)')
 
 dailyMonthPlot.set_xlabel('Hour')
 dailyMonthPlot.set_ylabel('CO2ge/kWh')
