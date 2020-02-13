@@ -11,6 +11,7 @@ CSV_URL_2016 = 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv'
 
 
 # Get And Calculate Carbon Intensity
+print("Grabbing Intensities")
 response = requests.get(
     "https://api.carbonintensity.org.uk/intensity/factors")
 
@@ -25,7 +26,9 @@ totalFossil = fossilFuelStations["lng"] + \
 
 json = response.json()
 factors = json["data"][0]
-print(factors)
+
+print("Resolving Intensities for Tokyo")
+# print(factors)
 carbonIntensity = {
     "kWh_nuclear": factors["Nuclear"],
     "kWh_fossil": (factors["Coal"]*fossilFuelStations["coal"] + factors["Oil"]*fossilFuelStations["oil"] + factors["Gas (Open Cycle)"]*fossilFuelStations["lng"])/totalFossil,
@@ -117,23 +120,31 @@ print("---2016")
 
 df = pd.concat([df2016, df2017, df2018, df2019])
 
-
+# Translate Column Headers
 print("Renaming Columns")
 df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
-# print(df.dtypes)
-# print(df)
 
 print("Calculating Carbon Intensity")
 df["carbon_intensity"] = df.apply(lambda row: carbonCalculation(row), axis=1)
-# print(df)
 
-# Create a Daily Average of Carbon Intensity Against the Time of Day
-print("Creating Daily Averages")
+# Grouping Functions
+print("Creating Grouped Data")
+# Allow Timebased Breakdowns against date facts
 times = pd.DatetimeIndex(df.datetime)
-# print(times.hour)
-dailyAverage = df.groupby([times.hour]).mean()
-# print(dailyAverage)
 
+# Create a Daily Average of Carbon Intensity Against the Time of Day for all days and years
+dailyAverage = df.groupby([times.hour]).mean()
+
+# Create a average of the Carbon Intensity for all times in a given month
+monthlyAverage = df.groupby([times.month]).mean()
+
+# Create a average of the Carbon Intensity for all times in a given month
+dailyAverageByMonth = pd.pivot_table(df, index=[times.hour], columns=[
+    times.month], values="carbon_intensity", aggfunc=np.mean)
+dailyAverageByMonth.columns.name = "month"
+dailyAverageByMonth.index.name = "hour"
+
+print("Creating Plots")
 # Plot Year's Carbon Intensity
 plot = df.plot.line(x="datetime", y="carbon_intensity")
 fig = plot.get_figure()
@@ -143,3 +154,33 @@ fig.savefig("scraper/plots/test.png")
 dailyPlot = dailyAverage.plot.line(y="carbon_intensity")
 dailyfig = dailyPlot.get_figure()
 dailyfig.savefig("scraper/plots/dailytest.png")
+
+# Plot Average Carbon Intensity In Month
+monthlyPlot = monthlyAverage.plot.bar(y="carbon_intensity")
+monthlyPlot.set_ylim(
+    monthlyAverage["carbon_intensity"].min()*0.9, monthlyAverage["carbon_intensity"].max()*1.1)
+monthlyfig = monthlyPlot.get_figure()
+monthlyfig.savefig("scraper/plots/monthlytest.png")
+
+
+# Plot Daily Carbon Intensity for Each Month
+# NICE FORMATTING STUFF
+# These are the "Tableau 20" colors as RGB.
+tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),
+             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),
+             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]
+
+# Scale the RGB values to the [0, 1] range, which is the format matplotlib accepts.
+for i in range(len(tableau20)):
+    r, g, b = tableau20[i]
+    tableau20[i] = (r / 255., g / 255., b / 255.)
+
+dailyMonthPlot = dailyAverageByMonth.plot.line(
+    color=tableau20, title='Carbon Intensity over a Given Day, By Month (2016-Now)')
+
+dailyMonthPlot.set_xlabel('Hour')
+dailyMonthPlot.set_ylabel('CO2ge/kWh')
+dailyMonthfig = dailyMonthPlot.get_figure()
+dailyMonthfig.savefig("scraper/plots/dailyMonthTest.png")
