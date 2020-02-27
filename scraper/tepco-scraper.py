@@ -4,47 +4,52 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-CSV_URL_2019 = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
-CSV_URL_2018 = 'http://www.tepco.co.jp/forecast/html/images/area-2018.csv'
-CSV_URL_2017 = 'http://www.tepco.co.jp/forecast/html/images/area-2017.csv'
-CSV_URL_2016 = 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv'
+
+import datetime
+
+from google.cloud import bigtable
+from google.cloud.bigtable import column_family
+from google.cloud.bigtable import row_filters
 
 
-# Get And Calculate Carbon Intensity
-print("Grabbing Intensities")
-response = requests.get(
-    "https://api.carbonintensity.org.uk/intensity/factors")
+def getCarbonIntensityFactors():
+    # Get And Calculate Carbon Intensity
+    print("Grabbing Intensities")
+    response = requests.get(
+        "https://api.carbonintensity.org.uk/intensity/factors")
 
-# Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
-fossilFuelStations = {
-    "lng": 4.38+3.6+3.6+5.16+3.42+3.541+1.15+2+1.14,
-    "oil": 5.66+1.05+4.40,
-    "coal": 2
-}
-totalFossil = fossilFuelStations["lng"] + \
-    fossilFuelStations["oil"]+fossilFuelStations["coal"]
+    # Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
+    fossilFuelStations = {
+        "lng": 4.38+3.6+3.6+5.16+3.42+3.541+1.15+2+1.14,
+        "oil": 5.66+1.05+4.40,
+        "coal": 2
+    }
+    totalFossil = fossilFuelStations["lng"] + \
+        fossilFuelStations["oil"]+fossilFuelStations["coal"]
 
-json = response.json()
-factors = json["data"][0]
+    json = response.json()
+    factors = json["data"][0]
 
-print("Resolving Intensities for Tokyo")
-# print(factors)
-carbonIntensity = {
-    "kWh_nuclear": factors["Nuclear"],
-    "kWh_fossil": (factors["Coal"]*fossilFuelStations["coal"] + factors["Oil"]*fossilFuelStations["oil"] + factors["Gas (Open Cycle)"]*fossilFuelStations["lng"])/totalFossil,
-    "kWh_hydro": factors["Hydro"],
-    "kWh_geothermal": 0,  # Probably
-    "kWh_biomass": factors["Biomass"],
-    "kWh_solar_output": factors["Solar"],
-    "kWh_wind_output": factors["Wind"],
-    "kWh_pumped_storage": factors["Pumped Storage"],
-    # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-    "kWh_interconnectors": 850
-}
-# print(carbonIntensity)
+    print("Resolving Intensities for Tokyo")
+    # print(factors)
+    carbonIntensity = {
+        "kWh_nuclear": factors["Nuclear"],
+        "kWh_fossil": (factors["Coal"]*fossilFuelStations["coal"] + factors["Oil"]*fossilFuelStations["oil"] + factors["Gas (Open Cycle)"]*fossilFuelStations["lng"])/totalFossil,
+        "kWh_hydro": factors["Hydro"],
+        "kWh_geothermal": 0,  # Probably
+        "kWh_biomass": factors["Biomass"],
+        "kWh_solar_output": factors["Solar"],
+        "kWh_wind_output": factors["Wind"],
+        "kWh_pumped_storage": factors["Pumped Storage"],
+        # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
+        "kWh_interconnectors": 850
+    }
+    # print(carbonIntensity)
+    return carbonIntensity
 
 
-def carbonCalculation(row):
+def carbonCalculation(row, carbonIntensity):
+
     # Reference: https://github.com/carbon-intensity/methodology/blob/master/Carbon%20Intensity%20Forecast%20Methodology.pdf
     nuclearIntensity = row["kWh_nuclear"] * carbonIntensity["kWh_nuclear"]
     fossilIntensity = row["kWh_fossil"] * carbonIntensity["kWh_fossil"]
@@ -89,60 +94,91 @@ def renameHeader(header):
     return header
 
 
-dtypes = {
-    "Unnamed: 2": int,
-    "火力": int,
-    "水力": int,
-    "地熱": int,
-    "バイオマス": int,
-    "太陽光発電実績": int,
-    "太陽光出力制御量": int,
-    "風力発電実績": int,
-    "風力出力制御量": int,
-    "揚水": int,
-    "連系線": int,
-    "合計": int
-}
+def parseTepcoCsvs():
+    CSV_URL_2019 = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
+    CSV_URL_2018 = 'http://www.tepco.co.jp/forecast/html/images/area-2018.csv'
+    CSV_URL_2017 = 'http://www.tepco.co.jp/forecast/html/images/area-2017.csv'
+    CSV_URL_2016 = 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv'
 
-print("Reading CSV")
-print("---2019")
-df2019 = pd.read_csv(CSV_URL_2019, skiprows=2, encoding="cp932",
-                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-df2018 = pd.read_csv(CSV_URL_2018, skiprows=2, encoding="cp932",
-                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-print("---2018")
-df2017 = pd.read_csv(CSV_URL_2017, skiprows=2, encoding="cp932",
-                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-print("---2017")
-df2016 = pd.read_csv(CSV_URL_2016, skiprows=2, encoding="cp932",
-                     parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-print("---2016")
+    dtypes = {
+        "Unnamed: 2": int,
+        "火力": int,
+        "水力": int,
+        "地熱": int,
+        "バイオマス": int,
+        "太陽光発電実績": int,
+        "太陽光出力制御量": int,
+        "風力発電実績": int,
+        "風力出力制御量": int,
+        "揚水": int,
+        "連系線": int,
+        "合計": int
+    }
 
-df = pd.concat([df2016, df2017, df2018, df2019])
+    print("Reading CSV")
 
-# Translate Column Headers
-print("Renaming Columns")
-df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
+    print("---2019")
+    df2019 = pd.read_csv(CSV_URL_2019, skiprows=2, encoding="cp932",
+                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+    df2018 = pd.read_csv(CSV_URL_2018, skiprows=2, encoding="cp932",
+                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+    print("---2018")
+    df2017 = pd.read_csv(CSV_URL_2017, skiprows=2, encoding="cp932",
+                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+    print("---2017")
+    df2016 = pd.read_csv(CSV_URL_2016, skiprows=2, encoding="cp932",
+                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
+    print("---2016")
 
+    df = pd.concat([df2016, df2017, df2018, df2019])
+
+    # Translate Column Headers
+    print("Renaming Columns")
+    df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
+
+    return df
+
+
+def createDailyAndMonthlyAverageGroup(df, times):
+    # Grouping Functions
+    print("Creating Grouped Data")
+
+    # Create a Daily Average of Carbon Intensity Against the Time of Day for all days and years
+    dailyAverage = df.groupby([times.hour]).mean()
+
+    # Create a average of the Carbon Intensity for all times in a given month
+    monthlyAverage = df.groupby([times.month]).mean()
+
+    return dailyAverage, monthlyAverage
+
+
+def createDailyAveragePerMonth(df, times):
+    # Create a average of the Carbon Intensity for all times in a given month
+    dailyAverageByMonth = pd.pivot_table(df, index=[times.hour], columns=[
+        times.month], values="carbon_intensity", aggfunc=np.mean)
+    dailyAverageByMonth.columns.name = "month"
+    dailyAverageByMonth.index.name = "hour"
+    return dailyAverageByMonth
+
+
+####################### Process ####################
+df = parseTepcoCsvs()
+carbonIntensityFactors = getCarbonIntensityFactors()
+
+# Add Carbon Intensity
 print("Calculating Carbon Intensity")
-df["carbon_intensity"] = df.apply(lambda row: carbonCalculation(row), axis=1)
+df["carbon_intensity"] = df.apply(
+    lambda row: carbonCalculation(row, carbonIntensityFactors), axis=1)
 
-# Grouping Functions
-print("Creating Grouped Data")
 # Allow Timebased Breakdowns against date facts
 times = pd.DatetimeIndex(df.datetime)
 
-# Create a Daily Average of Carbon Intensity Against the Time of Day for all days and years
-dailyAverage = df.groupby([times.hour]).mean()
+dailyAverage, monthlyAverage = createDailyAndMonthlyAverageGroup(df, times)
 
-# Create a average of the Carbon Intensity for all times in a given month
-monthlyAverage = df.groupby([times.month]).mean()
+dailyAverageByMonth = createDailyAveragePerMonth(df, times)
 
-# Create a average of the Carbon Intensity for all times in a given month
-dailyAverageByMonth = pd.pivot_table(df, index=[times.hour], columns=[
-    times.month], values="carbon_intensity", aggfunc=np.mean)
-dailyAverageByMonth.columns.name = "month"
-dailyAverageByMonth.index.name = "hour"
+
+##################### Plotting ####################
 
 print("Creating Plots")
 # Plot Year's Carbon Intensity
