@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TEPCOEnergyData',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('date', models.DateField()),
                 ('time', models.TimeField()),
                 ('datetime', models.DateTimeField()),
@@ -31,6 +32,8 @@ class Migration(migrations.Migration):
                 ('kWh_pumped_storage', models.IntegerField()),
                 ('kWh_interconnectors', models.IntegerField()),
                 ('kWh_total', models.IntegerField()),
+                ('carbon_intensity', models.DecimalField(
+                    max_digits=6, decimal_places=2)),
             ],
         ),
     ]

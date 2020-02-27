@@ -18,6 +18,9 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class TEPCODataSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TEPCOEnergyData
+        permissions = (
+            ('CAN_VIEW_BOOK', 'Can View Book'),
+        )
         fields = [
             "date",
             "time",
