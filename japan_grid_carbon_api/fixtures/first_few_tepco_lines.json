@@ -1,0 +1,65 @@
+[
+  {
+    "model": "japan_grid_carbon_api.TEPCOEnergyData",
+    "pk": 1,
+    "fields": {
+      "datetime": "2016-04-01T00:00:00.000Z",
+      "kWh_demand": 2555,
+      "kWh_nuclear": 0,
+      "kWh_fossil": 2258,
+      "kWh_hydro": 92,
+      "kWh_geothermal": 0,
+      "kWh_biomass": 2,
+      "kWh_solar_output": 0,
+      "kWh_solar_throttling": 0,
+      "kWh_wind_output": 2,
+      "kWh_wind_throttling": 0,
+      "kWh_pumped_storage": 0,
+      "kWh_interconnectors": 201,
+      "kWh_total": 2555,
+      "carbon_intensity": 722.4322896615
+    }
+  },
+  {
+    "model": "japan_grid_carbon_api.TEPCOEnergyData",
+    "pk": 2,
+    "fields": {
+      "datetime": "2016-04-01T01:00:00.000Z",
+      "kWh_demand": 2433,
+      "kWh_nuclear": 0,
+      "kWh_fossil": 2151,
+      "kWh_hydro": 92,
+      "kWh_geothermal": 0,
+      "kWh_biomass": 2,
+      "kWh_solar_output": 0,
+      "kWh_solar_throttling": 0,
+      "kWh_wind_output": 2,
+      "kWh_wind_throttling": 0,
+      "kWh_pumped_storage": 0,
+      "kWh_interconnectors": 186,
+      "kWh_total": 2433,
+      "carbon_intensity": 720.7991023346
+    }
+  },
+  {
+    "model": "japan_grid_carbon_api.TEPCOEnergyData",
+    "pk": 3,
+    "fields": {
+      "datetime": "2016-04-01T02:00:00.000Z",
+      "kWh_demand": 2393,
+      "kWh_nuclear": 0,
+      "kWh_fossil": 2117,
+      "kWh_hydro": 92,
+      "kWh_geothermal": 0,
+      "kWh_biomass": 2,
+      "kWh_solar_output": 0,
+      "kWh_solar_throttling": 0,
+      "kWh_wind_output": 2,
+      "kWh_wind_throttling": 0,
+      "kWh_pumped_storage": 0,
+      "kWh_interconnectors": 180,
+      "kWh_total": 2393,
+      "carbon_intensity": 720.1784076231
+    }
+  }
+]

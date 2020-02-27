@@ -4,8 +4,6 @@ from django.db import models
 
 
 class TEPCOEnergyData(models.Model):
-    date = models.DateField()
-    time = models.TimeField()
     datetime = models.DateTimeField()
     kWh_demand = models.IntegerField()
     kWh_nuclear = models.IntegerField()

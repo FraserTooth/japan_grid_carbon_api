@@ -22,8 +22,6 @@ class TEPCODataSerializer(serializers.HyperlinkedModelSerializer):
             ('CAN_VIEW_BOOK', 'Can View Book'),
         )
         fields = [
-            "date",
-            "time",
             "datetime",
             "kWh_demand",
             "kWh_nuclear",
