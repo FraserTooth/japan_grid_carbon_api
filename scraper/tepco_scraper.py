@@ -171,6 +171,9 @@ def getTEPCODataframewithCarbonIntensity():
     df["carbon_intensity"] = df.apply(
         lambda row: carbonCalculation(row, carbonIntensityFactors), axis=1)
 
+    # Remove timezone
+    # df["datetime"].dt.tz_localize("JST")
+
     return df
 
 
