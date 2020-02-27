@@ -2,11 +2,11 @@ from japan_grid_carbon_api import views
 from rest_framework import routers
 from django.urls import include, path
 from django.urls import path
-from japan_grid_carbon_api import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
+router.register(r'tepcoData', views.TepcoDataViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

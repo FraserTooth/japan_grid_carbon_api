@@ -178,7 +178,7 @@ def generateTEPCOJSON():
     df = getTEPCODataframewithCarbonIntensity()
 
     df.reset_index(inplace=True)
-    return df.to_json("scraper/tepcoData.json")
+    return df.to_json("scraper/tepcoData.json", orient='index')
 
 
 def makePlots():

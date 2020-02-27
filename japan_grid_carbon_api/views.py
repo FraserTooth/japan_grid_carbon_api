@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User, Group
 from japan_grid_carbon_api.serializers import UserSerializer, GroupSerializer
+from japan_grid_carbon_api.serializers import TEPCODataSerializer
+from japan_grid_carbon_api.models import TEPCOEnergyData
 from rest_framework import viewsets
 from django.shortcuts import render
 
@@ -25,3 +27,11 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+
+class TepcoDataViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows TEPCO data to be viewed
+    """
+    queryset = TEPCOEnergyData.objects.all()
+    serializer_class = TEPCODataSerializer
