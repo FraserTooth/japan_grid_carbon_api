@@ -20,3 +20,6 @@ class TEPCOEnergyData(models.Model):
     kWh_pumped_storage = models.IntegerField()
     kWh_interconnectors = models.IntegerField()
     kWh_total = models.IntegerField()
+    kWh_total = models.IntegerField()
+    carbon_intensity = models.DecimalField(
+        max_digits=6, decimal_places=2, default=0)
