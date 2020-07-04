@@ -179,8 +179,9 @@ def generateTEPCOJSON():
     df = getTEPCODataframewithCarbonIntensity()
 
     df.reset_index(inplace=True)
-    jsonFilepath = os.path.join(dirname, 'tepcoData.json')
-    return df.to_json(jsonFilepath, orient='index', date_format="iso")
+    # jsonFilepath = os.path.join(dirname, 'tepcoData.json')
+    # return df.to_json(jsonFilepath, orient='index', date_format="iso")
+    return df.to_json(orient='index', date_format="iso")
 
 
 def makePlots():
@@ -206,19 +207,21 @@ def makePlots():
     # Plot Year's Carbon Intensity
     plot = df.plot.line(x="datetime", y="carbon_intensity")
     fig = plot.get_figure()
-    fig.savefig(os.path.join(dirname, 'plots/test.png'))
+    fig.savefig(os.path.join(dirname, '../../../dist/plots/test.png'))
 
     # Plot Daily Carbon Intensity
     dailyPlot = dailyAverage.plot.line(y="carbon_intensity")
     dailyfig = dailyPlot.get_figure()
-    dailyfig.savefig(os.path.join(dirname, 'plots/dailytest.png'))
+    dailyfig.savefig(os.path.join(
+        dirname, '../../../dist/plots/dailytest.png'))
 
     # Plot Average Carbon Intensity In Month
     monthlyPlot = monthlyAverage.plot.bar(y="carbon_intensity")
     monthlyPlot.set_ylim(
         monthlyAverage["carbon_intensity"].min()*0.9, monthlyAverage["carbon_intensity"].max()*1.1)
     monthlyfig = monthlyPlot.get_figure()
-    monthlyfig.savefig(os.path.join(dirname, 'plots/monthlytest.png'))
+    monthlyfig.savefig(os.path.join(
+        dirname, '../../../dist/plots/monthlytest.png'))
 
     # Plot Daily Carbon Intensity for Each Month
     # NICE FORMATTING STUFF
@@ -240,4 +243,5 @@ def makePlots():
     dailyMonthPlot.set_xlabel('Hour')
     dailyMonthPlot.set_ylabel('CO2ge/kWh')
     dailyMonthfig = dailyMonthPlot.get_figure()
-    dailyMonthfig.savefig(os.path.join(dirname, 'plots/dailyMonthTest.png'))
+    dailyMonthfig.savefig(os.path.join(
+        dirname, '../../../dist/plots/dailyMonthTest.png'))
