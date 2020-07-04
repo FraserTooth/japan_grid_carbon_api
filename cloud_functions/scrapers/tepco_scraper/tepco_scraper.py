@@ -6,10 +6,9 @@ import matplotlib.pyplot as plt
 
 
 import datetime
+import os
 
-from google.cloud import bigtable
-from google.cloud.bigtable import column_family
-from google.cloud.bigtable import row_filters
+dirname = os.path.dirname(__file__)
 
 
 def getCarbonIntensityFactors():
@@ -95,10 +94,15 @@ def renameHeader(header):
 
 
 def parseTepcoCsvs():
-    CSV_URL_2019 = 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv'
-    CSV_URL_2018 = 'http://www.tepco.co.jp/forecast/html/images/area-2018.csv'
-    CSV_URL_2017 = 'http://www.tepco.co.jp/forecast/html/images/area-2017.csv'
-    CSV_URL_2016 = 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv'
+    CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
+
+    CSV_URLS = [
+        'http://www.tepco.co.jp/forecast/html/images/area-2016.csv',
+        'http://www.tepco.co.jp/forecast/html/images/area-2017.csv',
+        'http://www.tepco.co.jp/forecast/html/images/area-2018.csv',
+        'http://www.tepco.co.jp/forecast/html/images/area-2019.csv',
+        'http://www.tepco.co.jp/forecast/html/images/area-2020.csv'
+    ]
 
     dtypes = {
         "Unnamed: 2": int,
@@ -115,22 +119,16 @@ def parseTepcoCsvs():
         "合計": int
     }
 
-    print("Reading CSV")
+    def getTEPCOCSV(url):
+        print("  -- getting:", url)
+        return pd.read_csv(url, skiprows=2, encoding="cp932",
+                           parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
 
-    print("---2019")
-    df2019 = pd.read_csv(CSV_URL_2019, skiprows=2, encoding="cp932",
-                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-    df2018 = pd.read_csv(CSV_URL_2018, skiprows=2, encoding="cp932",
-                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-    print("---2018")
-    df2017 = pd.read_csv(CSV_URL_2017, skiprows=2, encoding="cp932",
-                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-    print("---2017")
-    df2016 = pd.read_csv(CSV_URL_2016, skiprows=2, encoding="cp932",
-                         parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
-    print("---2016")
+    print("Reading CSVs")
 
-    df = pd.concat([df2016, df2017, df2018, df2019])
+    dataList = map(getTEPCOCSV, CSV_URLS)
+
+    df = pd.concat(dataList)
 
     # Translate Column Headers
     print("Renaming Columns")
@@ -181,7 +179,8 @@ def generateTEPCOJSON():
     df = getTEPCODataframewithCarbonIntensity()
 
     df.reset_index(inplace=True)
-    return df.to_json("scraper/tepcoData.json", orient='index', date_format="iso")
+    jsonFilepath = os.path.join(dirname, 'tepcoData.json')
+    return df.to_json(jsonFilepath, orient='index', date_format="iso")
 
 
 def makePlots():
@@ -207,19 +206,19 @@ def makePlots():
     # Plot Year's Carbon Intensity
     plot = df.plot.line(x="datetime", y="carbon_intensity")
     fig = plot.get_figure()
-    fig.savefig("scraper/plots/test.png")
+    fig.savefig(os.path.join(dirname, 'plots/test.png'))
 
     # Plot Daily Carbon Intensity
     dailyPlot = dailyAverage.plot.line(y="carbon_intensity")
     dailyfig = dailyPlot.get_figure()
-    dailyfig.savefig("scraper/plots/dailytest.png")
+    dailyfig.savefig(os.path.join(dirname, 'plots/dailytest.png'))
 
     # Plot Average Carbon Intensity In Month
     monthlyPlot = monthlyAverage.plot.bar(y="carbon_intensity")
     monthlyPlot.set_ylim(
         monthlyAverage["carbon_intensity"].min()*0.9, monthlyAverage["carbon_intensity"].max()*1.1)
     monthlyfig = monthlyPlot.get_figure()
-    monthlyfig.savefig("scraper/plots/monthlytest.png")
+    monthlyfig.savefig(os.path.join(dirname, 'plots/monthlytest.png'))
 
     # Plot Daily Carbon Intensity for Each Month
     # NICE FORMATTING STUFF
@@ -241,4 +240,4 @@ def makePlots():
     dailyMonthPlot.set_xlabel('Hour')
     dailyMonthPlot.set_ylabel('CO2ge/kWh')
     dailyMonthfig = dailyMonthPlot.get_figure()
-    dailyMonthfig.savefig("scraper/plots/dailyMonthTest.png")
+    dailyMonthfig.savefig(os.path.join(dirname, 'plots/dailyMonthTest.png'))
