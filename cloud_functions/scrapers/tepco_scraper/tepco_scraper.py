@@ -97,10 +97,10 @@ def parseTepcoCsvs():
     CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
 
     CSV_URLS = [
-        'http://www.tepco.co.jp/forecast/html/images/area-2016.csv',
-        'http://www.tepco.co.jp/forecast/html/images/area-2017.csv',
-        'http://www.tepco.co.jp/forecast/html/images/area-2018.csv',
-        'http://www.tepco.co.jp/forecast/html/images/area-2019.csv',
+        # 'http://www.tepco.co.jp/forecast/html/images/area-2016.csv',
+        # 'http://www.tepco.co.jp/forecast/html/images/area-2017.csv',
+        # 'http://www.tepco.co.jp/forecast/html/images/area-2018.csv',
+        # 'http://www.tepco.co.jp/forecast/html/images/area-2019.csv',
         'http://www.tepco.co.jp/forecast/html/images/area-2020.csv'
     ]
 
