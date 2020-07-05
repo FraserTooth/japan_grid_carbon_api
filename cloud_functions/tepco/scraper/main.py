@@ -1,5 +1,4 @@
 import tepco_scraper as ts
-import gc
 import json
 from google.cloud import storage
 from google.cloud import bigquery
@@ -17,8 +16,7 @@ def tepco_scraper(request):
     print("Sending:")
     _upload_blob_to_storage(df)
     print(" - Sent to Cloud Storage")
-    
-    gc.collect()
+
     _insert_into_bigquery(df)
     print(" - Sent to BigQuery")
     return f'Success!'
@@ -39,16 +37,12 @@ def _upload_blob_to_storage(df):
 
 
 def _insert_into_bigquery(df):
-    BQ = bigquery.Client()
-    BQ_DATASET = 'japan-grid-carbon-api'
-    BQ_TABLE = 'tepco_data'
+    BQ_DATASET = 'tepco'
+    BQ_TABLE = 'historical_data_by_generation_type'
 
-    table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
-    errors = BQ.insert_rows_json(table, json_rows=ts.convert_tepco_df_to_json(
-        df), retry=retry.Retry(deadline=30))
+    table_id = BQ_DATASET + "." + BQ_TABLE
 
-    if errors != []:
-        raise BigQueryError(errors)
+    df.to_gbq(table_id, if_exists="replace")
 
 
 class BigQueryError(Exception):
