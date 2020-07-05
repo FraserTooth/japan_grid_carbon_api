@@ -177,14 +177,15 @@ def getTEPCODataframewithCarbonIntensity():
 
 def generateTEPCOJSON():
     df = getTEPCODataframewithCarbonIntensity()
-
-    df.reset_index(inplace=True)
-    # jsonFilepath = os.path.join(dirname, 'tepcoData.json')
-    # return df.to_json(jsonFilepath, orient='index', date_format="iso")
     return df.to_json(orient='index', date_format="iso")
 
 
-def makePlots():
+def generateTEPCOCsv():
+    df = getTEPCODataframewithCarbonIntensity()
+    return df.to_csv(index=False)
+
+
+def _makePlots():
     ####################### Process ####################
     df = parseTepcoCsvs()
     carbonIntensityFactors = getCarbonIntensityFactors()
