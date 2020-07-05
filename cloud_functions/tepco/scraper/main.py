@@ -14,13 +14,21 @@ BLOB_NAME = 'tepco_historical_data.csv'
 
 
 def tepco_scraper(request):
+    print("Scraping:")
     df = ts.get_tepco_as_dataframe()
+    print(" - Got Data")
+    print("Converting:")
     csvText = ts.convert_tepco_df_to_csv(df)
+    jsonText = ts.convert_tepco_df_to_json(df)
+    print(" - Got JSON and CSV")
+
     request_json = request.get_json()
 
+    print("Sending:")
     _upload_blob_to_storage(BUCKET_NAME, csvText, BLOB_NAME)
-
-    _insert_into_bigquery(df)
+    print(" - Sent to Cloud Storage")
+    _insert_into_bigquery(jsonText)
+    print(" - Sent to BigQuery")
     return f'Success!'
 
 
@@ -35,11 +43,10 @@ def _upload_blob_to_storage(bucket_name, blob_text, destination_blob_name):
         destination_blob_name))
 
 
-def _insert_into_bigquery(dataframe):
-    row = ts.convert_tepco_df_to_json(dataframe)
+def _insert_into_bigquery(json):
     table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
     errors = BQ.insert_rows_json(table,
-                                 json_rows=[row],
+                                 json_rows=[json],
                                  retry=retry.Retry(deadline=30))
     if errors != []:
         raise BigQueryError(errors)

@@ -21,6 +21,6 @@ Example Graphs So Far:
 > Derived from Public TEPCO Data_
 
 ### Useful Functions Snippets
-```bash
+```
 gcloud functions logs read
 ```

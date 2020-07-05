@@ -81,6 +81,7 @@ def get_tepco_as_json():
 
 
 def convert_tepco_df_to_json(df):
+    df.reset_index(inplace=True)
     return df.to_json(orient='index', date_format="iso")
 
 
