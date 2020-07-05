@@ -19,3 +19,8 @@ Example Graphs So Far:
 >![Carbon Intensity in Tokyo over a Given Day, By Month (2016-Now)](misc/dailyMonthEarlyPlot.png)  
 >_An Early Carbon Intensity Graph, this is the average amount of Carbon Emitted in Tokyo for every unit of electricity used, for all hours of the day, for each month of the year.  
 > Derived from Public TEPCO Data_
+
+### Useful Functions Snippets
+```bash
+gcloud functions logs read
+```
