@@ -204,3 +204,4 @@ ENV/
 scraper/plots
 scraper/*.json
 *_output
+gc-key.json
