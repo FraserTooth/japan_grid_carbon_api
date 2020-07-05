@@ -8,11 +8,11 @@ def tepco_scraper(request):
     BUCKET_NAME = 'scraper_data'
     BLOB_NAME = 'tepco_historical_data.csv'
 
-    upload_blob(BUCKET_NAME, csvText, BLOB_NAME)
+    _upload_blob(BUCKET_NAME, csvText, BLOB_NAME)
     return f'Success!'
 
 
-def upload_blob(bucket_name, blob_text, destination_blob_name):
+def _upload_blob(bucket_name, blob_text, destination_blob_name):
     """Uploads a file to the bucket."""
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)

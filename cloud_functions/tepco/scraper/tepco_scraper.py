@@ -5,7 +5,7 @@ import pandas as pd
 import datetime
 
 
-def renameHeader(header):
+def _renameHeader(header):
 
     translations = {
         "Unnamed: 0": "date",
@@ -31,7 +31,7 @@ def renameHeader(header):
     return header
 
 
-def parseTepcoCsvs():
+def _parseTepcoCsvs():
     CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
 
     CSV_URLS = [
@@ -57,29 +57,29 @@ def parseTepcoCsvs():
         "合計": int
     }
 
-    def getTEPCOCSV(url):
+    def _getTEPCOCSV(url):
         print("  -- getting:", url)
         return pd.read_csv(url, skiprows=2, encoding="cp932",
                            parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
 
     print("Reading CSVs")
 
-    dataList = map(getTEPCOCSV, CSV_URLS)
+    dataList = map(_getTEPCOCSV, CSV_URLS)
 
     df = pd.concat(dataList)
 
     # Translate Column Headers
     print("Renaming Columns")
-    df = df.rename(columns=lambda x: renameHeader(x), errors="raise")
+    df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
     return df
 
 
 def generateTEPCOJSON():
-    df = parseTepcoCsvs()
+    df = _parseTepcoCsvs()
     return df.to_json(orient='index', date_format="iso")
 
 
 def generateTEPCOCsv():
-    df = parseTepcoCsvs()
+    df = _parseTepcoCsvs()
     return df.to_csv(index=False)
