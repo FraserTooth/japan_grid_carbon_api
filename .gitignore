@@ -203,3 +203,4 @@ ENV/
 # Other Stuff
 scraper/plots
 scraper/*.json
+*_output

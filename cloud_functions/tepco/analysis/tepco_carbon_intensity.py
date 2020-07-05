@@ -2,6 +2,8 @@ from ..scrapers.tepco_scraper.tepco_scraper import parseTepcoCsvs
 import os
 
 dirname = os.path.dirname(__file__)
+plotsFolder = os.path.join(dirname, '_output/plots/')
+dataFolder = os.path.join(dirname, '_output/data/')
 
 
 def addCarbonIntensityFactors():
@@ -121,13 +123,13 @@ def _makePlots():
     # Plot Year's Carbon Intensity
     plot = df.plot.line(x="datetime", y="carbon_intensity")
     fig = plot.get_figure()
-    fig.savefig(os.path.join(dirname, '../dist/plots/test.png'))
+    fig.savefig(os.path.join(plotsFolder, 'test.png'))
 
     # Plot Daily Carbon Intensity
     dailyPlot = dailyAverage.plot.line(y="carbon_intensity")
     dailyfig = dailyPlot.get_figure()
     dailyfig.savefig(os.path.join(
-        dirname, '../dist/plots/dailytest.png'))
+        plotsFolder, 'dailytest.png'))
 
     # Plot Average Carbon Intensity In Month
     monthlyPlot = monthlyAverage.plot.bar(y="carbon_intensity")
@@ -135,7 +137,7 @@ def _makePlots():
         monthlyAverage["carbon_intensity"].min()*0.9, monthlyAverage["carbon_intensity"].max()*1.1)
     monthlyfig = monthlyPlot.get_figure()
     monthlyfig.savefig(os.path.join(
-        dirname, '../dist/plots/monthlytest.png'))
+        plotsFolder, 'monthlytest.png'))
 
     # Plot Daily Carbon Intensity for Each Month
     # NICE FORMATTING STUFF
@@ -158,7 +160,7 @@ def _makePlots():
     dailyMonthPlot.set_ylabel('CO2ge/kWh')
     dailyMonthfig = dailyMonthPlot.get_figure()
     dailyMonthfig.savefig(os.path.join(
-        dirname, '../../../dist/plots/dailyMonthTest.png'))
+        plotsFolder, 'dailyMonthTest.png'))
 
 
 _makePlots()
