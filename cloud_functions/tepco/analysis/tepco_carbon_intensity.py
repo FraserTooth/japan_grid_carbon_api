@@ -21,12 +21,12 @@ def addCarbonIntensityFactors():
 
     # Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
     fossilFuelStations = {
-        "lng": 4.38+3.6+3.6+5.16+3.42+3.541+1.15+2+1.14,
-        "oil": 5.66+1.05+4.40,
+        "lng": 4.38 + 3.6 + 3.6 + 5.16 + 3.42 + 3.541 + 1.15 + 2 + 1.14,
+        "oil": 5.66 + 1.05 + 4.40,
         "coal": 2
     }
     totalFossil = fossilFuelStations["lng"] + \
-        fossilFuelStations["oil"]+fossilFuelStations["coal"]
+        fossilFuelStations["oil"] + fossilFuelStations["coal"]
 
     json = response.json()
     factors = json["data"][0]
@@ -35,7 +35,7 @@ def addCarbonIntensityFactors():
     # print(factors)
     carbonIntensity = {
         "kWh_nuclear": factors["Nuclear"],
-        "kWh_fossil": (factors["Coal"]*fossilFuelStations["coal"] + factors["Oil"]*fossilFuelStations["oil"] + factors["Gas (Open Cycle)"]*fossilFuelStations["lng"])/totalFossil,
+        "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
         "kWh_hydro": factors["Hydro"],
         "kWh_geothermal": 0,  # Probably
         "kWh_biomass": factors["Biomass"],
@@ -141,7 +141,7 @@ def _makePlots():
     # Plot Average Carbon Intensity In Month
     monthlyPlot = monthlyAverage.plot.bar(y="carbon_intensity")
     monthlyPlot.set_ylim(
-        monthlyAverage["carbon_intensity"].min()*0.9, monthlyAverage["carbon_intensity"].max()*1.1)
+        monthlyAverage["carbon_intensity"].min() * 0.9, monthlyAverage["carbon_intensity"].max() * 1.1)
     monthlyfig = monthlyPlot.get_figure()
     monthlyfig.savefig(os.path.join(
         plotsFolder, 'monthlytest.png'))
