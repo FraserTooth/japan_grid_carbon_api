@@ -1,4 +1,5 @@
 import tepco_scraper as ts
+import gc
 import json
 from google.cloud import storage
 from google.cloud import bigquery
@@ -6,14 +7,6 @@ from google.api_core import retry
 
 
 def tepco_scraper(request):
-    BQ = bigquery.Client()
-    BQ_DATASET = 'japan-grid-carbon-api'
-    BQ_TABLE = 'tepco_data'
-
-    CS = storage.Client()
-    BUCKET_NAME = 'scraper_data'
-    BLOB_NAME = 'tepco_historical_data.csv'
-
     request_json = request.get_json(silent=True)
 
     print("Scraping:")
@@ -24,13 +17,18 @@ def tepco_scraper(request):
     print("Sending:")
     _upload_blob_to_storage(df)
     print(" - Sent to Cloud Storage")
-
+    
+    gc.collect()
     _insert_into_bigquery(df)
     print(" - Sent to BigQuery")
     return f'Success!'
 
 
 def _upload_blob_to_storage(df):
+    CS = storage.Client()
+    BUCKET_NAME = 'scraper_data'
+    BLOB_NAME = 'tepco_historical_data.csv'
+
     """Uploads a file to the bucket."""
     bucket = CS.get_bucket(BUCKET_NAME)
     blob = bucket.blob(BLOB_NAME)
@@ -41,6 +39,10 @@ def _upload_blob_to_storage(df):
 
 
 def _insert_into_bigquery(df):
+    BQ = bigquery.Client()
+    BQ_DATASET = 'japan-grid-carbon-api'
+    BQ_TABLE = 'tepco_data'
+
     table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
     errors = BQ.insert_rows_json(table, json_rows=ts.convert_tepco_df_to_json(
         df), retry=retry.Retry(deadline=30))
