@@ -1,4 +1,4 @@
-import tepcoscraper as ts
+import tepco_scraper as ts
 import json
 from google.cloud import storage
 from google.cloud import bigquery
@@ -20,7 +20,7 @@ def tepco_scraper(request):
 
     _upload_blob_to_storage(BUCKET_NAME, csvText, BLOB_NAME)
 
-    _insert_into_bigquery(df, )
+    _insert_into_bigquery(df)
     return f'Success!'
 
 
@@ -35,12 +35,11 @@ def _upload_blob_to_storage(bucket_name, blob_text, destination_blob_name):
         destination_blob_name))
 
 
-def _insert_into_bigquery(dataframe, bucket_name, file_name):
+def _insert_into_bigquery(dataframe):
     row = ts.convert_tepco_df_to_json(dataframe)
     table = BQ.dataset(BQ_DATASET).table(BQ_TABLE)
     errors = BQ.insert_rows_json(table,
                                  json_rows=[row],
-                                 row_ids=[file_name],
                                  retry=retry.Retry(deadline=30))
     if errors != []:
         raise BigQueryError(errors)
