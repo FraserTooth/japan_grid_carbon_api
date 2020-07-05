@@ -1,5 +1,12 @@
-from ..scrapers.tepco_scraper.tepco_scraper import parseTepcoCsvs
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import requests
 import os
+# from ..scraper import tepco_scraper
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "../scraper"))
+from tepco_scraper import parseTepcoCsvs
 
 dirname = os.path.dirname(__file__)
 plotsFolder = os.path.join(dirname, '_output/plots/')
