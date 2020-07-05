@@ -75,11 +75,23 @@ def _parseTepcoCsvs():
     return df
 
 
-def generateTEPCOJSON():
+def get_tepco_as_json():
     df = _parseTepcoCsvs()
     return df.to_json(orient='index', date_format="iso")
 
 
-def generateTEPCOCsv():
+def convert_tepco_df_to_json(df):
+    return df.to_json(orient='index', date_format="iso")
+
+
+def get_tepco_as_csv():
     df = _parseTepcoCsvs()
     return df.to_csv(index=False)
+
+
+def convert_tepco_df_to_csv(df):
+    return df.to_csv(index=False)
+
+
+def get_tepco_as_dataframe():
+    return _parseTepcoCsvs()
