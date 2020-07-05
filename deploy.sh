@@ -1,9 +1,10 @@
 #!/bin/bash
-FUNCTION=$1
+COMPANY=$1
+FUNCTION=$2
 
-echo "Deploying Function $1"
-cd cloud_functions/scrapers/$1/
+echo "Deploying Function $FUNCTION for $COMPANY"
+cd cloud_functions/$COMPANY/scraper
 
-gcloud functions deploy $1 --runtime python37 --trigger-http --allow-unauthenticated
+gcloud functions deploy $FUNCTION --runtime python37 --trigger-http --allow-unauthenticated
 
 echo "Done"
