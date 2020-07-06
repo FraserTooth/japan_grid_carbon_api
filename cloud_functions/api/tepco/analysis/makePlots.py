@@ -7,59 +7,17 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../scraper"))
 from tepco_scraper import parseTepcoCsvs
-import tepco_carbon_intensity
+import tepco_carbon_intensity as tci
 
 dirname = os.path.dirname(__file__)
 plotsFolder = os.path.join(dirname, '_output/plots/')
 dataFolder = os.path.join(dirname, '_output/data/')
 
-def getTEPCODataframewithCarbonIntensity():
-    df = parseTepcoCsvs()
-
-    carbonIntensityFactors = addCarbonIntensityFactors()
-
-    # Add Carbon Intensity
-    print("Calculating Carbon Intensity")
-    df["carbon_intensity"] = df.apply(
-        lambda row: carbonCalculation(row, carbonIntensityFactors), axis=1)
-
-    # Remove timezone
-    # df["datetime"].dt.tz_localize("JST")
-
-    return df
-
-
-def createDailyAndMonthlyAverageGroup(df, times):
-    # Grouping Functions
-    print("Creating Grouped Data")
-
-    # Create a Daily Average of Carbon Intensity Against the Time of Day for all days and years
-    dailyAverage = df.groupby([times.hour]).mean()
-
-    # Create a average of the Carbon Intensity for all times in a given month
-    monthlyAverage = df.groupby([times.month]).mean()
-
-    return dailyAverage, monthlyAverage
-
-
-def createDailyAveragePerMonth(df, times):
-    # Create a average of the Carbon Intensity for all times in a given month
-    dailyAverageByMonth = pd.pivot_table(df, index=[times.hour], columns=[
-        times.month], values="carbon_intensity", aggfunc=np.mean)
-    dailyAverageByMonth.columns.name = "month"
-    dailyAverageByMonth.index.name = "hour"
-    return dailyAverageByMonth
-
 
 def _makePlots():
     ####################### Process ####################
     df = parseTepcoCsvs()
-    carbonIntensityFactors = addCarbonIntensityFactors()
-
-    # Add Carbon Intensity
-    print("Calculating Carbon Intensity")
-    df["carbon_intensity"] = df.apply(
-        lambda row: carbonCalculation(row, carbonIntensityFactors), axis=1)
+    df = tci.addCarbonIntensityFactors(df)
 
     # Allow Timebased Breakdowns against date facts
     times = pd.DatetimeIndex(df.datetime)

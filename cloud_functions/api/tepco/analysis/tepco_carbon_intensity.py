@@ -4,7 +4,7 @@ import requests
 import os
 
 
-def addCarbonIntensityFactors():
+def addCarbonIntensityFactors(df):
     # Get And Calculate Carbon Intensity
     print("Grabbing Intensities")
     response = requests.get(
@@ -37,7 +37,13 @@ def addCarbonIntensityFactors():
         "kWh_interconnectors": 850
     }
     # print(carbonIntensity)
-    return carbonIntensity
+
+    # Add Carbon Intensity
+    print("Calculating Carbon Intensity")
+    df["carbon_intensity"] = df.apply(
+        lambda row: carbonCalculation(row, carbonIntensity), axis=1)
+
+    return df
 
 
 def carbonCalculation(row, carbonIntensity):
@@ -58,3 +64,25 @@ def carbonCalculation(row, carbonIntensity):
         carbonIntensity["kWh_interconnectors"]
 
     return (nuclearIntensity + fossilIntensity + hydroIntensity + geothermalIntensity + biomassIntensity + solarIntensity + windIntensity + pumpedStorageIntensity + interconnectorIntensity) / row["kWh_total"]
+
+
+def createDailyAndMonthlyAverageGroup(df, times):
+    # Grouping Functions
+    print("Creating Grouped Data")
+
+    # Create a Daily Average of Carbon Intensity Against the Time of Day for all days and years
+    dailyAverage = df.groupby([times.hour]).mean()
+
+    # Create a average of the Carbon Intensity for all times in a given month
+    monthlyAverage = df.groupby([times.month]).mean()
+
+    return dailyAverage, monthlyAverage
+
+
+def createDailyAveragePerMonth(df, times):
+    # Create a average of the Carbon Intensity for all times in a given month
+    dailyAverageByMonth = pd.pivot_table(df, index=[times.hour], columns=[
+        times.month], values="carbon_intensity", aggfunc=np.mean)
+    dailyAverageByMonth.columns.name = "month"
+    dailyAverageByMonth.index.name = "hour"
+    return dailyAverageByMonth
