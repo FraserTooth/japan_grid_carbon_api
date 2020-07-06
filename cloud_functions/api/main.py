@@ -14,6 +14,7 @@ def _extract_daily_info_from_big_query(utility):
       SELECT * 
       FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type` 
       ORDER BY datetime asc
+      LIMIT 10000
     """.format(utility=utility)
 
     return pd.read_gbq(query)
