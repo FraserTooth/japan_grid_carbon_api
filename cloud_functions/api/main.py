@@ -13,14 +13,23 @@ def _extract_daily_info_from_big_query(utility):
     query = """
       SELECT * 
       FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type` 
-      ORDER BY datetime desc
+      ORDER BY datetime asc
     """.format(utility=utility)
 
     return pd.read_gbq(query)
 
 
 def _tepco_daily_intensity():
-    df = _extract_daily_info_from_big_query("tepco")
+    df = tci.addCarbonIntensityFactors(
+        _extract_daily_info_from_big_query("tepco"))
+
+    # Allow Timebased Breakdowns against date facts
+    times = pd.DatetimeIndex(df.datetime)
+
+    dailyAverageByMonth = tci.createDailyAveragePerMonth(df, times)
+
+    dailyAverageByMonth.reset_index(inplace=True)
+    return dailyAverageByMonth.to_json(orient='index', date_format="iso")
 
 
 def daily_carbon_intensity(request):
@@ -35,4 +44,4 @@ def daily_carbon_intensity(request):
         return f'No utility specified', 400
 
     if utility == "tepco":
-        return _extract_daily_info_from_big_query()
+        return _tepco_daily_intensity()
