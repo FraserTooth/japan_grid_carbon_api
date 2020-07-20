@@ -43,6 +43,29 @@ def _tepco_daily_intensity():
 
 
 def daily_carbon_intensity(request):
+
+    # For more information about CORS and CORS preflight requests, see
+    # https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request
+    # for more information.
+
+    # Set CORS headers for the preflight request
+    if request.method == 'OPTIONS':
+        # Allows GET requests from any origin with the Content-Type
+        # header and caches preflight response for an 3600s
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '3600'
+        }
+
+        return ('', 204, headers)
+
+    # Set CORS headers for the main request
+    headers = {
+        'Access-Control-Allow-Origin': '*'
+    }
+
     request_json = request.get_json(silent=True)
     request_args = request.args
 
@@ -51,7 +74,7 @@ def daily_carbon_intensity(request):
     elif request_args and 'utility' in request_args:
         utility = request_args['utility']
     else:
-        return f'No utility specified', 400
+        return f'No utility specified', 400, headers
 
     if utility == "tepco":
-        return _tepco_daily_intensity()
+        return _tepco_daily_intensity(), 200, headers
