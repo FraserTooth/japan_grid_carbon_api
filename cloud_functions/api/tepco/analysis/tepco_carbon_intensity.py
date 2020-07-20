@@ -4,7 +4,7 @@ import requests
 import os
 
 
-def addCarbonIntensityFactors(df):
+def addCarbonIntensityFactors(df, row_suffix=""):
     # Get And Calculate Carbon Intensity
     print("Grabbing Intensities")
     response = requests.get(
@@ -41,29 +41,34 @@ def addCarbonIntensityFactors(df):
     # Add Carbon Intensity
     print("Calculating Carbon Intensity")
     df["carbon_intensity"] = df.apply(
-        lambda row: carbonCalculation(row, carbonIntensity), axis=1)
+        lambda row: carbonCalculation(row, carbonIntensity, row_suffix), axis=1)
 
     return df
 
 
-def carbonCalculation(row, carbonIntensity):
+def carbonCalculation(row, carbonIntensity, suffix=""):
 
     # Reference: https://github.com/carbon-intensity/methodology/blob/master/Carbon%20Intensity%20Forecast%20Methodology.pdf
-    nuclearIntensity = row["kWh_nuclear"] * carbonIntensity["kWh_nuclear"]
-    fossilIntensity = row["kWh_fossil"] * carbonIntensity["kWh_fossil"]
-    hydroIntensity = row["kWh_hydro"] * carbonIntensity["kWh_hydro"]
-    geothermalIntensity = row["kWh_geothermal"] * \
+    nuclearIntensity = row["kWh_nuclear{suffix}".format(
+        suffix=suffix)] * carbonIntensity["kWh_nuclear"]
+    fossilIntensity = row["kWh_fossil{suffix}".format(
+        suffix=suffix)] * carbonIntensity["kWh_fossil"]
+    hydroIntensity = row["kWh_hydro{suffix}".format(
+        suffix=suffix)] * carbonIntensity["kWh_hydro"]
+    geothermalIntensity = row["kWh_geothermal{suffix}".format(suffix=suffix)] * \
         carbonIntensity["kWh_geothermal"]
-    biomassIntensity = row["kWh_biomass"] * carbonIntensity["kWh_biomass"]
-    solarIntensity = row["kWh_solar_output"] * \
+    biomassIntensity = row["kWh_biomass{suffix}".format(
+        suffix=suffix)] * carbonIntensity["kWh_biomass"]
+    solarIntensity = row["kWh_solar_output{suffix}".format(suffix=suffix)] * \
         carbonIntensity["kWh_solar_output"]
-    windIntensity = row["kWh_wind_output"] * carbonIntensity["kWh_wind_output"]
-    pumpedStorageIntensity = row["kWh_pumped_storage"] * \
+    windIntensity = row["kWh_wind_output{suffix}".format(
+        suffix=suffix)] * carbonIntensity["kWh_wind_output"]
+    pumpedStorageIntensity = row["kWh_pumped_storage{suffix}".format(suffix=suffix)] * \
         carbonIntensity["kWh_pumped_storage"]
-    interconnectorIntensity = row["kWh_interconnectors"] * \
+    interconnectorIntensity = row["kWh_interconnectors{suffix}".format(suffix=suffix)] * \
         carbonIntensity["kWh_interconnectors"]
 
-    return (nuclearIntensity + fossilIntensity + hydroIntensity + geothermalIntensity + biomassIntensity + solarIntensity + windIntensity + pumpedStorageIntensity + interconnectorIntensity) / row["kWh_total"]
+    return (nuclearIntensity + fossilIntensity + hydroIntensity + geothermalIntensity + biomassIntensity + solarIntensity + windIntensity + pumpedStorageIntensity + interconnectorIntensity) / row["kWh_total{suffix}".format(suffix=suffix)]
 
 
 def createDailyAndMonthlyAverageGroup(df, times):

@@ -11,10 +11,24 @@ import tepco.analysis.tepco_carbon_intensity as tci
 def _extract_daily_info_from_big_query(utility):
 
     query = """
-      SELECT * 
-      FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type` 
-      ORDER BY datetime asc
-      LIMIT 10000
+    SELECT
+        EXTRACT(HOUR FROM datetime) AS hour,
+        AVG(kWh_demand) as kWh_demand_hour,
+        AVG(kWh_nuclear) as kWh_nuclear_hour,
+        AVG(kWh_fossil) as kWh_fossil_hour,
+        AVG(kWh_hydro) as kWh_hydro_hour,
+        AVG(kWh_geothermal) as kWh_geothermal_hour,
+        AVG(kWh_biomass) as kWh_biomass_hour,
+        AVG(kWh_solar_output) as kWh_solar_output_hour,
+        AVG(kWh_solar_throttling) as kWh_solar_throttling_hour,
+        AVG(kWh_wind_output) as kWh_wind_output_hour,
+        AVG(kWh_wind_throttling) as kWh_wind_throttling_hour,
+        AVG(kWh_pumped_storage) as kWh_pumped_storage_hour,
+        AVG(kWh_interconnectors) as kWh_interconnectors_hour,
+        AVG(kWh_total) as kWh_total_hour
+    FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
+    GROUP BY hour
+    ORDER BY hour asc
     """.format(utility=utility)
 
     return pd.read_gbq(query)
@@ -22,15 +36,10 @@ def _extract_daily_info_from_big_query(utility):
 
 def _tepco_daily_intensity():
     df = tci.addCarbonIntensityFactors(
-        _extract_daily_info_from_big_query("tepco"))
+        _extract_daily_info_from_big_query("tepco"), "_hour")
 
-    # Allow Timebased Breakdowns against date facts
-    times = pd.DatetimeIndex(df.datetime)
-
-    dailyAverageByMonth = tci.createDailyAveragePerMonth(df, times)
-
-    dailyAverageByMonth.reset_index(inplace=True)
-    return dailyAverageByMonth.to_json(orient='index', date_format="iso")
+    df.reset_index(inplace=True)
+    return df.to_json(orient='index', date_format="iso")
 
 
 def daily_carbon_intensity(request):

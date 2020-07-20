@@ -21,6 +21,13 @@ Example Graphs So Far:
 > Derived from Public TEPCO Data_
 
 ### Useful Functions Snippets
-```
+```bash
+# Read the Recent Logs
 gcloud functions logs read
+
+# Deploy Endpoint
+./deployendpoint.sh daily_carbon_intensity
+
+# Run Locally
+./local.sh api daily_carbon_intensity
 ```
