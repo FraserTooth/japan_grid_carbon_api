@@ -22,6 +22,9 @@ Example Graphs So Far:
 
 ### Useful Functions Snippets
 ```bash
+# Open Virtual Environment
+source .venv/bin/activate
+
 # Read the Recent Logs
 gcloud functions logs read
 

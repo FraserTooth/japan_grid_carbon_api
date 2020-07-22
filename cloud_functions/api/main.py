@@ -7,6 +7,8 @@ from google.api_core import retry
 
 import tepco.analysis.tepco_carbon_intensity as tci
 
+cache = {}
+
 
 def _extract_daily_info_from_big_query(utility):
 
@@ -62,19 +64,35 @@ def _extract_daily_info_by_month_from_big_query(utility):
 
 
 def _tepco_daily_intensity():
+    # Check Cache
+    if "_tepco_daily_intensity" in cache:
+        print("Returning cache._tepco_daily_intensity:")
+        return cache._tepco_daily_intensity
+
     df = tci.addCarbonIntensityFactors(
         _extract_daily_info_from_big_query("tepco"), "_hour")
 
     df.reset_index(inplace=True)
-    return df.to_json(orient='index', date_format="iso")
+
+    # Populate Cache
+    cache['_tepco_daily_intensity'] = df
+    return df
 
 
 def _tepco_daily_intensity_by_month():
+    # Check Cache
+    if "_tepco_daily_intensity_by_month" in cache:
+        print("Returning cache._tepco_daily_intensity:")
+        return cache._tepco_daily_intensity
+
     df = tci.addCarbonIntensityFactors(
         _extract_daily_info_by_month_from_big_query("tepco"), "_avg")
 
     df.reset_index(inplace=True)
-    return df.to_json(orient='index', date_format="iso")
+
+    # Populate Cache
+    cache['_tepco_daily_intensity_by_month'] = df
+    return df
 
 
 def daily_carbon_intensity(request):
@@ -99,6 +117,8 @@ def daily_carbon_intensity(request):
     request_json = request.get_json(silent=True)
     request_args = request.args
 
+    response = {}
+
     if request_json and 'utility' in request_json:
         utility = request_json['utility']
     elif request_args and 'utility' in request_args:
@@ -107,7 +127,9 @@ def daily_carbon_intensity(request):
         return f'No utility specified', 400, headers
 
     if utility == "tepco":
-        return _tepco_daily_intensity(), 200, headers
+        df = _tepco_daily_intensity()
+        response['data'] = df.to_dict('records')
+        return json.dumps(response), 200, headers
 
 
 def daily_carbon_intensity_by_month(request):
@@ -132,6 +154,8 @@ def daily_carbon_intensity_by_month(request):
     request_json = request.get_json(silent=True)
     request_args = request.args
 
+    response = {}
+
     if request_json and 'utility' in request_json:
         utility = request_json['utility']
     elif request_args and 'utility' in request_args:
@@ -140,4 +164,6 @@ def daily_carbon_intensity_by_month(request):
         return f'No utility specified', 400, headers
 
     if utility == "tepco":
-        return _tepco_daily_intensity_by_month(), 200, headers
+        df = _tepco_daily_intensity_by_month()
+        response['data'] = df.to_dict('records')
+        return response, 200, headers
