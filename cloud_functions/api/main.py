@@ -90,9 +90,11 @@ def _tepco_daily_intensity_by_month():
 
     df.reset_index(inplace=True)
 
+    output = df.groupby('month').agg({"carbon_intensity": list}).to_dict()
+
     # Populate Cache
-    cache['_tepco_daily_intensity_by_month'] = df
-    return df
+    cache['_tepco_daily_intensity_by_month'] = output
+    return output
 
 
 def daily_carbon_intensity(request):
@@ -164,6 +166,6 @@ def daily_carbon_intensity_by_month(request):
         return f'No utility specified', 400, headers
 
     if utility == "tepco":
-        df = _tepco_daily_intensity_by_month()
-        response['data'] = df.to_dict('records')
+        carbon_intensity_by_month = _tepco_daily_intensity_by_month()
+        response['data'] = carbon_intensity_by_month
         return response, 200, headers
