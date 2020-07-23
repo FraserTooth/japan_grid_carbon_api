@@ -4,7 +4,7 @@ import requests
 import os
 
 
-def addCarbonIntensityFactors(df, row_suffix=""):
+def getCarbonIntensityFactors():
     # Get And Calculate Carbon Intensity
     print("Grabbing Intensities")
     response = requests.get(
@@ -37,6 +37,11 @@ def addCarbonIntensityFactors(df, row_suffix=""):
         "kWh_interconnectors": 850
     }
     # print(carbonIntensity)
+    return carbonIntensity
+
+
+def addCarbonIntensityFactors(df, row_suffix=""):
+    carbonIntensity = getCarbonIntensityFactors()
 
     # Add Carbon Intensity
     print("Calculating Carbon Intensity")
