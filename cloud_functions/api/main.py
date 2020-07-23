@@ -74,10 +74,13 @@ def _tepco_daily_intensity():
 
     df.reset_index(inplace=True)
 
-    output = {"carbon_intensity": df['carbon_intensity'].to_list()}
+    output = {"carbon_intensity_by_hour": df[[
+        'hour', 'carbon_intensity']].to_dict("records"),
+        "fromCache": True}
 
     # Populate Cache
     cache['_tepco_daily_intensity'] = output
+    output["fromCache"] = False
     return output
 
 
