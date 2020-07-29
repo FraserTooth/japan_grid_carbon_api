@@ -1,12 +1,10 @@
-org: frasertooth
-app: japan-grid-carbon
-service: japan-grid-carbon
+service: api
 
 provider:
   name: google
   stage: dev
   runtime: python37
-  # region: us-central1
+  region: us-central1
   project: japan-grid-carbon-api
   # The GCF credentials can be a little tricky to set up. Luckily we've documented this for you here:
   # https://serverless.com/framework/docs/providers/google/guide/credentials/
@@ -26,8 +24,8 @@ package:
     - .git/**
 
 functions:
-  daily_carbon_intensity:
-    handler: daily_carbon_intensity
+  dailyCarbonIntensity:
+    handler: dailyCarbon
     events:
       - http: path
   # NOTE: the following uses an "event" event (pubSub event in this case).
