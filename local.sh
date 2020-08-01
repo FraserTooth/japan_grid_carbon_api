@@ -4,7 +4,7 @@ FUNCTION=$2
 DIR="$PWD"
 export GCP_PROJECT="japan-grid-carbon-api"
 
-export GOOGLE_APPLICATION_CREDENTIALS="$DIR/gc-key.json"
+export GOOGLE_APPLICATION_CREDENTIALS="$DIR/.gcloud/keyfile.json"
 
 echo "Locally Running Function $FUNCTION for $FOLDER"
 cd cloud_functions/$FOLDER/

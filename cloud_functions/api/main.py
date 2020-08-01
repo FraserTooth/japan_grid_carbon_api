@@ -4,7 +4,7 @@ import json
 import tepco.api as tepco
 
 
-def daily_carbon_intensity(request):
+def dailyCarbon(request):
     # Set CORS headers for the preflight request
     if request.method == 'OPTIONS':
         # Allows GET requests from any origin with the Content-Type
