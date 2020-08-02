@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 from pprint import pprint
 
-import tepco.api as tepco
+import utilities.tepco.api as tepco
 
 # Add CORS to All Requests
 headers = {

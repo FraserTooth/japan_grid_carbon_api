@@ -5,7 +5,7 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 
-import tepco.analysis.tepco_carbon_intensity as tci
+import utilities.tepco.analysis.tepco_carbon_intensity as tci
 
 cache = {}
 
