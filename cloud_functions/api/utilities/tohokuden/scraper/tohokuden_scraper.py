@@ -89,6 +89,9 @@ def _parseTohokudenCsvs():
     print("Renaming Columns")
     df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
+    df['datetime'] = pd.to_datetime(df['datetime'], infer_datetime_format=True).dt.tz_localize(
+        'Asia/Tokyo')
+
     return df
 
 
