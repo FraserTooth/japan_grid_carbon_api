@@ -113,6 +113,3 @@ def convert_tohokuden_df_to_csv(df):
 
 def get_tohokuden_as_dataframe():
     return _parseTohokudenCsvs()
-
-
-print(get_tohokuden_as_dataframe().tail())
