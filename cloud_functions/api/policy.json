@@ -1,0 +1,8 @@
+{
+  "bindings": [
+    {
+      "role": "roles/cloudfunctions.invoker",
+      "members": ["allUsers"]
+    }
+  ]
+}

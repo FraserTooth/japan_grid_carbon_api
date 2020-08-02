@@ -1,5 +1,8 @@
 #!/bin/bash
 
-./deployendpoint.sh daily_carbon_intensity
-./deployendpoint.sh daily_carbon_intensity_by_month
-./deployendpoint.sh daily_carbon_intensity_by_month_and_weekday
+echo "Deploying All"
+cd cloud_functions/api/
+
+gcloud functions set-iam-policy --region=us-central1 api policy.json
+
+sls deploy
