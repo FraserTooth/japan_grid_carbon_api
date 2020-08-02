@@ -24,8 +24,11 @@ package:
     - .git/**
 
 functions:
-  dailyCarbonIntensity:
-    handler: dailyCarbon
+  main:
+    name: api
+    handler: entry
+    memorySize: 128
+    timeout: 120s
     events:
       - http: path
   # NOTE: the following uses an "event" event (pubSub event in this case).
