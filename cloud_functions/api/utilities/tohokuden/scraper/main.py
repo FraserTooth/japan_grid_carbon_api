@@ -25,7 +25,7 @@ def tohokuden_scraper(request):
 def _upload_blob_to_storage(df):
     CS = storage.Client()
     BUCKET_NAME = 'scraper_data'
-    BLOB_NAME = 'tohoku_historical_data.csv'
+    BLOB_NAME = 'tohokuden_historical_data.csv'
 
     """Uploads a file to the bucket."""
     bucket = CS.get_bucket(BUCKET_NAME)
@@ -37,7 +37,7 @@ def _upload_blob_to_storage(df):
 
 
 def _insert_into_bigquery(df):
-    BQ_DATASET = 'tepco'
+    BQ_DATASET = 'tohokuden'
     BQ_TABLE = 'historical_data_by_generation_type'
 
     table_id = BQ_DATASET + "." + BQ_TABLE
