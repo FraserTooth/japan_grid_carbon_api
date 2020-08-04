@@ -1,12 +1,13 @@
 import json
+import copy
 import werkzeug.datastructures
 from flask import Flask
 app = Flask(__name__)
 
 from pprint import pprint
 
-import utilities.tepco.api as tepco
-import utilities.tohokuden.api as tohokuden
+from utilities.tepco.TepcoAPI import TepcoAPI
+from utilities.tohokuden.TohokudenAPI import TohokudenAPI
 
 # Add CORS to All Requests
 headers = {
@@ -14,10 +15,16 @@ headers = {
 }
 
 
+cache = {
+    "tepco": {},
+    "tohokuden": {}
+}
+
+
 def selectUtility(utility):
     utilities = {
-        "tepco": tepco,
-        "tohokuden": tohokuden
+        "tepco": TepcoAPI(),
+        "tohokuden": TohokudenAPI()
     }
     return utilities.get(utility, None)
 
@@ -47,7 +54,17 @@ def daily_carbon_intensity(utility):
     if utilityClass == None:
         return f'Invalid utility specified', 400, headers
 
+    # Check Cache
+    if "daily_intensity" in cache[utility]:
+        print("Returning cache." + utility + "daily_intensity:")
+        return json.dumps(cache[utility]["daily_intensity"]), 200, headers
+
     response['data'] = utilityClass.daily_intensity()
+    response['fromCache'] = True
+
+    # Populate Cache
+    cache[utility]["daily_intensity"] = copy.deepcopy(response)
+    response["fromCache"] = False
 
     return json.dumps(response), 200, headers
 
@@ -58,18 +75,30 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
 
     utilityClass = selectUtility(utility)
 
+    # Sense Check Utiltity
     if utilityClass == None:
         return f'Invalid utility specified', 400, headers
 
+    # Check Breakdown Type
     breakdowns = {
         "month": utilityClass.daily_intensity_by_month,
         "month_and_weekday": utilityClass.daily_intensity_by_month_and_weekday
     }
     dataSource = breakdowns.get(breakdown, None)
-
     if dataSource == None:
         return f'Invalid Breakdown Specified', 400, headers
 
+    # Check Cache
+    if breakdown in cache[utility]:
+        print("Returning cache." + utility +
+              "daily_intensity_by_" + breakdown + ":")
+        return json.dumps(cache[utility][breakdown]), 200, headers
+
     response['data'] = dataSource()
+    response['fromCache'] = True
+
+    # Populate Cache
+    cache[utility][breakdown] = copy.deepcopy(response)
+    response["fromCache"] = False
 
     return json.dumps(response), 200, headers
