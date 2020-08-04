@@ -1,4 +1,4 @@
-class Utility:
+class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
         self.carbonIntensity = self.get_carbon_intensity_factors()
