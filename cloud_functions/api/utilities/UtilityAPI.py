@@ -6,6 +6,7 @@ class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
 
+    # Likely to be Overwritten
     def _get_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
@@ -121,6 +122,7 @@ class UtilityAPI:
 
         return output
 
+    # Likely to be Overwritten
     def get_carbon_intensity_factors(self):
         # Get And Calculate Carbon Intensity
         print("Grabbing Intensities")
