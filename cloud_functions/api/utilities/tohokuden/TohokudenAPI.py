@@ -2,25 +2,25 @@ import requests
 from utilities.UtilityAPI import UtilityAPI
 
 
-class TepcoAPI(UtilityAPI):
+class TohokudenAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("tepco")
+        super().__init__("tohokuden")
 
     def _get_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
         AVG((
-            (daMWh_nuclear * {intensity_nuclear}) +
-            (daMWh_fossil * {intensity_fossil}) +
-            (daMWh_hydro * {intensity_hydro}) +
-            (daMWh_geothermal * {intensity_geothermal}) +
-            (daMWh_biomass * {intensity_biomass}) +
-            (daMWh_solar_output * {intensity_solar_output}) +
-            (daMWh_wind_output * {intensity_wind_output}) +
-            (daMWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) * {intensity_interconnectors})
-            ) / daMWh_total
+            (MWh_nuclear * {intensity_nuclear}) + 
+            (MWh_fossil * {intensity_fossil}) + 
+            (MWh_hydro * {intensity_hydro}) + 
+            (MWh_geothermal * {intensity_geothermal}) + 
+            (MWh_biomass * {intensity_biomass}) +
+            (MWh_solar_output * {intensity_solar_output}) +
+            (MWh_wind_output * {intensity_wind_output}) +
+            (MWh_pumped_storage * {intensity_pumped_storage}) +
+            (if(MWh_interconnectors > 0,MWh_interconnectors, 0) * {intensity_interconnectors}) 
+            ) / (MWh_area_demand)
             ) as carbon_intensity
         FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
         """.format(
@@ -54,7 +54,7 @@ class TepcoAPI(UtilityAPI):
         json = response.json()
         factors = json["data"][0]
 
-        print("Resolving Intensities for Tokyo")
+        print("Resolving Intensities for Tohoku")
 
         return {
             "kWh_nuclear": factors["Nuclear"],
@@ -66,5 +66,5 @@ class TepcoAPI(UtilityAPI):
             "kWh_wind_output": factors["Wind"],
             "kWh_pumped_storage": factors["Pumped Storage"],
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 500
+            "kWh_interconnectors": 850
         }

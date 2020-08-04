@@ -7,7 +7,7 @@ app = Flask(__name__)
 from pprint import pprint
 
 from utilities.tepco.TepcoAPI import TepcoAPI
-import utilities.tohokuden.api as tohokuden
+from utilities.tohokuden.TohokudenAPI import TohokudenAPI
 
 # Add CORS to All Requests
 headers = {
@@ -24,7 +24,7 @@ cache = {
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAPI(),
-        "tohokuden": tohokuden
+        "tohokuden": TohokudenAPI()
     }
     return utilities.get(utility, None)
 

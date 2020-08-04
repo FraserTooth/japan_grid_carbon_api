@@ -5,10 +5,9 @@ import requests
 class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
-        self.carbonIntensity = self.get_carbon_intensity_factors()
 
     def _get_intensity_query_string(self):
-        ci = self.carbonIntensity
+        ci = self.get_carbon_intensity_factors()
 
         return """
         AVG((
