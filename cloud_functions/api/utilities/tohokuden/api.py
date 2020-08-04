@@ -5,7 +5,7 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 
-import utilities.tepco.analysis.tepco_carbon_intensity as tci
+import utilities.tohokuden.analysis.tohokuden_carbon_intensity as tci
 
 cache = {}
 
@@ -15,16 +15,15 @@ def _get_intensity_query_string(utility):
 
     return """
     AVG((
-        (daMWh_nuclear * {intensity_nuclear}) + 
-        (daMWh_fossil * {intensity_fossil}) + 
-        (daMWh_hydro * {intensity_hydro}) + 
-        (daMWh_geothermal * {intensity_geothermal}) + 
-        (daMWh_biomass * {intensity_biomass}) +
-        (daMWh_solar_output * {intensity_solar_output}) +
-        (daMWh_wind_output * {intensity_wind_output}) +
-        (daMWh_pumped_storage * {intensity_pumped_storage}) +
-        (daMWh_interconnectors * {intensity_interconnectors}) 
-        ) / daMWh_total
+        (MWh_nuclear * {intensity_nuclear}) + 
+        (MWh_fossil * {intensity_fossil}) + 
+        (MWh_hydro * {intensity_hydro}) + 
+        (MWh_geothermal * {intensity_geothermal}) + 
+        (MWh_biomass * {intensity_biomass}) +
+        (MWh_solar_output * {intensity_solar_output}) +
+        (MWh_wind_output * {intensity_wind_output}) +
+        (MWh_pumped_storage * {intensity_pumped_storage})
+        ) / (MWh_area_demand)
         ) as carbon_intensity
     FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
     """.format(
@@ -85,11 +84,11 @@ def _extract_daily_carbon_intensity_by_month_and_weekday_from_big_query(utility)
 
 def daily_intensity():
     # Check Cache
-    if "_tepco_daily_intensity" in cache:
-        print("Returning cache._tepco_daily_intensity:")
-        return cache["_tepco_daily_intensity"]
+    if "_tohokuden_daily_intensity" in cache:
+        print("Returning cache._tohokuden_daily_intensity:")
+        return cache["_tohokuden_daily_intensity"]
 
-    df = _extract_daily_carbon_intensity_from_big_query("tepco")
+    df = _extract_daily_carbon_intensity_from_big_query("tohokuden")
 
     df.reset_index(inplace=True)
 
@@ -98,18 +97,18 @@ def daily_intensity():
         "fromCache": True}
 
     # Populate Cache
-    cache['_tepco_daily_intensity'] = copy.deepcopy(output)
+    cache['_tohokuden_daily_intensity'] = copy.deepcopy(output)
     output["fromCache"] = False
     return output
 
 
 def daily_intensity_by_month():
     # Check Cache
-    if "_tepco_daily_intensity_by_month" in cache:
-        print("Returning cache._tepco_daily_intensity_by_month:")
-        return cache["_tepco_daily_intensity_by_month"]
+    if "_tohokuden_daily_intensity_by_month" in cache:
+        print("Returning cache._tohokuden_daily_intensity_by_month:")
+        return cache["_tohokuden_daily_intensity_by_month"]
 
-    df = _extract_daily_carbon_intensity_by_month_from_big_query("tepco")
+    df = _extract_daily_carbon_intensity_by_month_from_big_query("tohokuden")
 
     df.reset_index(inplace=True)
 
@@ -123,19 +122,19 @@ def daily_intensity_by_month():
     }
 
     # Populate Cache
-    cache['_tepco_daily_intensity_by_month'] = copy.deepcopy(output)
+    cache['_tohokuden_daily_intensity_by_month'] = copy.deepcopy(output)
     output["fromCache"] = False
     return output
 
 
 def daily_intensity_by_month_and_weekday():
     # Check Cache
-    if "_tepco_daily_intensity_by_month_and_weekday" in cache:
-        print("Returning cache._tepco_daily_intensity_by_month_and_weekday:")
-        return cache["_tepco_daily_intensity_by_month_and_weekday"]
+    if "_tohokuden_daily_intensity_by_month_and_weekday" in cache:
+        print("Returning cache._tohokuden_daily_intensity_by_month_and_weekday:")
+        return cache["_tohokuden_daily_intensity_by_month_and_weekday"]
 
     df = _extract_daily_carbon_intensity_by_month_and_weekday_from_big_query(
-        "tepco")
+        "tohokuden")
 
     df.reset_index(inplace=True)
 
@@ -151,7 +150,7 @@ def daily_intensity_by_month_and_weekday():
     }
 
     # Populate Cache
-    cache['_tepco_daily_intensity_by_month_and_weekday'] = copy.deepcopy(
+    cache['_tohokuden_daily_intensity_by_month_and_weekday'] = copy.deepcopy(
         output)
     output["fromCache"] = False
     return output
