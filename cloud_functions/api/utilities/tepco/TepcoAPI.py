@@ -1,4 +1,5 @@
-import utilities.UtilityAPI as UtilityAPI
+import requests
+from utilities.UtilityAPI import UtilityAPI
 
 
 class TepcoAPI(UtilityAPI):

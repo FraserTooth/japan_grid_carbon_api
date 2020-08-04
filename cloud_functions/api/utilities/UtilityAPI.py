@@ -1,3 +1,7 @@
+import pandas as pd
+import requests
+
+
 class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
@@ -74,7 +78,7 @@ class UtilityAPI:
 
     def daily_intensity(self):
 
-        df = _extract_daily_carbon_intensity_from_big_query(self.utility)
+        df = self._extract_daily_carbon_intensity_from_big_query()
 
         df.reset_index(inplace=True)
 
@@ -86,8 +90,7 @@ class UtilityAPI:
 
     def daily_intensity_by_month(self):
 
-        df = _extract_daily_carbon_intensity_by_month_from_big_query(
-            self.utility)
+        df = self._extract_daily_carbon_intensity_by_month_from_big_query()
 
         df.reset_index(inplace=True)
 
@@ -103,8 +106,7 @@ class UtilityAPI:
 
     def daily_intensity_by_month_and_weekday(self):
 
-        df = _extract_daily_carbon_intensity_by_month_and_weekday_from_big_query(
-            self.utility)
+        df = self._extract_daily_carbon_intensity_by_month_and_weekday_from_big_query()
 
         df.reset_index(inplace=True)
 
