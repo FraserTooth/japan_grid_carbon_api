@@ -14,8 +14,6 @@ def _get_intensity_query_string(utility):
     carbonIntensity = tci.getCarbonIntensityFactors()
 
     return """
-    SELECT
-    EXTRACT(HOUR FROM datetime) AS hour,
     AVG((
         (daMWh_nuclear * {intensity_nuclear}) + 
         (daMWh_fossil * {intensity_fossil}) + 
@@ -45,7 +43,10 @@ def _get_intensity_query_string(utility):
 
 def _extract_daily_carbon_intensity_from_big_query(utility):
 
-    query = _get_intensity_query_string(utility) + """
+    query = """
+    SELECT
+    EXTRACT(HOUR FROM datetime) AS hour,
+    """ + _get_intensity_query_string(utility) + """
     GROUP BY hour
     order by hour asc
     """
@@ -55,7 +56,11 @@ def _extract_daily_carbon_intensity_from_big_query(utility):
 
 def _extract_daily_carbon_intensity_by_month_from_big_query(utility):
 
-    query = _get_intensity_query_string(utility) + """
+    query = """
+    SELECT
+    EXTRACT(MONTH FROM datetime) AS month,
+    EXTRACT(HOUR FROM datetime) AS hour,
+    """ + _get_intensity_query_string(utility) + """
     GROUP BY month, hour
     order by month, hour asc
     """
@@ -65,7 +70,12 @@ def _extract_daily_carbon_intensity_by_month_from_big_query(utility):
 
 def _extract_daily_carbon_intensity_by_month_and_weekday_from_big_query(utility):
 
-    query = _get_intensity_query_string(utility) + """
+    query = """
+    SELECT
+    EXTRACT(MONTH FROM datetime) AS month,
+    EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+    EXTRACT(HOUR FROM datetime) AS hour,
+    """ + _get_intensity_query_string(utility) + """
     GROUP BY month, dayofweek, hour
     order by month, dayofweek, hour asc
     """
