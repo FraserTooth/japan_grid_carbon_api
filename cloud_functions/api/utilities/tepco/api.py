@@ -10,28 +10,25 @@ import utilities.tepco.analysis.tepco_carbon_intensity as tci
 cache = {}
 
 
-def _extract_daily_carbon_intensity_from_big_query(utility):
-
+def _get_intensity_query_string(utility):
     carbonIntensity = tci.getCarbonIntensityFactors()
 
-    query = """
+    return """
     SELECT
     EXTRACT(HOUR FROM datetime) AS hour,
     AVG((
-        (kWh_nuclear * {intensity_nuclear}) + 
-        (kWh_fossil * {intensity_fossil}) + 
-        (kWh_hydro * {intensity_hydro}) + 
-        (kWh_geothermal * {intensity_geothermal}) + 
-        (kWh_biomass * {intensity_biomass}) +
-        (kWh_solar_output * {intensity_solar_output}) +
-        (kWh_wind_output * {intensity_wind_output}) +
-        (kWh_pumped_storage * {intensity_pumped_storage}) +
-        (kWh_interconnectors * {intensity_interconnectors}) 
-        ) / kWh_total
+        (daMWh_nuclear * {intensity_nuclear}) + 
+        (daMWh_fossil * {intensity_fossil}) + 
+        (daMWh_hydro * {intensity_hydro}) + 
+        (daMWh_geothermal * {intensity_geothermal}) + 
+        (daMWh_biomass * {intensity_biomass}) +
+        (daMWh_solar_output * {intensity_solar_output}) +
+        (daMWh_wind_output * {intensity_wind_output}) +
+        (daMWh_pumped_storage * {intensity_pumped_storage}) +
+        (daMWh_interconnectors * {intensity_interconnectors}) 
+        ) / daMWh_total
         ) as carbon_intensity
     FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
-    GROUP BY hour
-    order by hour asc
     """.format(
         utility=utility,
         intensity_nuclear=carbonIntensity["kWh_nuclear"],
@@ -44,85 +41,34 @@ def _extract_daily_carbon_intensity_from_big_query(utility):
         intensity_pumped_storage=carbonIntensity["kWh_pumped_storage"],
         intensity_interconnectors=carbonIntensity["kWh_interconnectors"]
     )
+
+
+def _extract_daily_carbon_intensity_from_big_query(utility):
+
+    query = _get_intensity_query_string(utility) + """
+    GROUP BY hour
+    order by hour asc
+    """
 
     return pd.read_gbq(query)
 
 
 def _extract_daily_carbon_intensity_by_month_from_big_query(utility):
 
-    carbonIntensity = tci.getCarbonIntensityFactors()
-
-    query = """
-    SELECT
-    EXTRACT(MONTH FROM datetime) AS month,
-    EXTRACT(HOUR FROM datetime) AS hour,
-    AVG((
-        (kWh_nuclear * {intensity_nuclear}) + 
-        (kWh_fossil * {intensity_fossil}) + 
-        (kWh_hydro * {intensity_hydro}) + 
-        (kWh_geothermal * {intensity_geothermal}) + 
-        (kWh_biomass * {intensity_biomass}) +
-        (kWh_solar_output * {intensity_solar_output}) +
-        (kWh_wind_output * {intensity_wind_output}) +
-        (kWh_pumped_storage * {intensity_pumped_storage}) +
-        (kWh_interconnectors * {intensity_interconnectors}) 
-        ) / kWh_total
-        ) as carbon_intensity
-    FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+    query = _get_intensity_query_string(utility) + """
     GROUP BY month, hour
     order by month, hour asc
-    """.format(
-        utility=utility,
-        intensity_nuclear=carbonIntensity["kWh_nuclear"],
-        intensity_fossil=carbonIntensity["kWh_fossil"],
-        intensity_hydro=carbonIntensity["kWh_hydro"],
-        intensity_geothermal=carbonIntensity["kWh_geothermal"],
-        intensity_biomass=carbonIntensity["kWh_biomass"],
-        intensity_solar_output=carbonIntensity["kWh_solar_output"],
-        intensity_wind_output=carbonIntensity["kWh_wind_output"],
-        intensity_pumped_storage=carbonIntensity["kWh_pumped_storage"],
-        intensity_interconnectors=carbonIntensity["kWh_interconnectors"]
-    )
+    """
 
     return pd.read_gbq(query)
 
 
 def _extract_daily_carbon_intensity_by_month_and_weekday_from_big_query(utility):
 
-    carbonIntensity = tci.getCarbonIntensityFactors()
-
-    query = """
-    SELECT
-    EXTRACT(MONTH FROM datetime) AS month,
-    EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
-    EXTRACT(HOUR FROM datetime) AS hour,
-    AVG((
-        (kWh_nuclear * {intensity_nuclear}) + 
-        (kWh_fossil * {intensity_fossil}) + 
-        (kWh_hydro * {intensity_hydro}) + 
-        (kWh_geothermal * {intensity_geothermal}) + 
-        (kWh_biomass * {intensity_biomass}) +
-        (kWh_solar_output * {intensity_solar_output}) +
-        (kWh_wind_output * {intensity_wind_output}) +
-        (kWh_pumped_storage * {intensity_pumped_storage}) +
-        (kWh_interconnectors * {intensity_interconnectors}) 
-        ) / kWh_total
-        ) as carbon_intensity
-    FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+    query = _get_intensity_query_string(utility) + """
     GROUP BY month, dayofweek, hour
     order by month, dayofweek, hour asc
-    """.format(
-        utility=utility,
-        intensity_nuclear=carbonIntensity["kWh_nuclear"],
-        intensity_fossil=carbonIntensity["kWh_fossil"],
-        intensity_hydro=carbonIntensity["kWh_hydro"],
-        intensity_geothermal=carbonIntensity["kWh_geothermal"],
-        intensity_biomass=carbonIntensity["kWh_biomass"],
-        intensity_solar_output=carbonIntensity["kWh_solar_output"],
-        intensity_wind_output=carbonIntensity["kWh_wind_output"],
-        intensity_pumped_storage=carbonIntensity["kWh_pumped_storage"],
-        intensity_interconnectors=carbonIntensity["kWh_interconnectors"]
-    )
+    """
 
     return pd.read_gbq(query)
 
