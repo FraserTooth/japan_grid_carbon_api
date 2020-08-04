@@ -23,7 +23,7 @@ def _get_intensity_query_string(utility):
         (daMWh_solar_output * {intensity_solar_output}) +
         (daMWh_wind_output * {intensity_wind_output}) +
         (daMWh_pumped_storage * {intensity_pumped_storage}) +
-        (daMWh_interconnectors * {intensity_interconnectors}) 
+        (if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) * {intensity_interconnectors}) 
         ) / daMWh_total
         ) as carbon_intensity
     FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
