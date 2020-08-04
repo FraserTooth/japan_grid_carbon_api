@@ -9,18 +9,18 @@ def _renameHeader(header):
 
     translations = {
         "DATE_TIME": "datetime",
-        "エリア需要〔MWh〕": "kWh_area_demand",
-        "水力〔MWh〕": "kWh_hydro",
-        "火力〔MWh〕": "kWh_fossil",
-        "原子力〔MWh〕": "kWh_nuclear",
-        "太陽光実績〔MWh〕": "kWh_solar_output",
-        "太陽光抑制量〔MWh〕": "kWh_solar_throttling",
-        "風力実績〔MWh〕": "kWh_wind_output",
-        "風力抑制量〔MWh〕": "kWh_wind_throttling",
-        "地熱〔MWh〕": "kWh_geothermal",
-        "バイオマス〔MWh〕": "kWh_biomass",
-        "揚水〔MWh〕": "kWh_pumped_storage",
-        "連系線〔MWh〕": "kWh_interconnectors",
+        "エリア需要〔MWh〕": "MWh_area_demand",
+        "水力〔MWh〕": "MWh_hydro",
+        "火力〔MWh〕": "MWh_fossil",
+        "原子力〔MWh〕": "MWh_nuclear",
+        "太陽光実績〔MWh〕": "MWh_solar_output",
+        "太陽光抑制量〔MWh〕": "MWh_solar_throttling",
+        "風力実績〔MWh〕": "MWh_wind_output",
+        "風力抑制量〔MWh〕": "MWh_wind_throttling",
+        "地熱〔MWh〕": "MWh_geothermal",
+        "バイオマス〔MWh〕": "MWh_biomass",
+        "揚水〔MWh〕": "MWh_pumped_storage",
+        "連系線〔MWh〕": "MWh_interconnectors",
     }
 
     if header in translations:

@@ -6,6 +6,7 @@ app = Flask(__name__)
 from pprint import pprint
 
 import utilities.tepco.api as tepco
+import utilities.tohokuden.api as tohokuden
 
 # Add CORS to All Requests
 headers = {
@@ -16,6 +17,7 @@ headers = {
 def selectUtility(utility):
     utilities = {
         "tepco": tepco,
+        "tohokuden": tohokuden
     }
     return utilities.get(utility, None)
 

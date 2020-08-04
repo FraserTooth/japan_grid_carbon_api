@@ -45,3 +45,10 @@ gcloud functions logs read
 # Deploy All
 ./deployAll.sh
 ```
+### Links Used when calculating the Carbon Intensities in Japan
+
+- https://www.fepc.or.jp/about_us/pr/pdf/kaiken_s_e_20170616.pdf
+- https://e-lcs.jp/news/detail/000208.html
+- https://www.jepic.or.jp/pub/pdf/epijJepic2019.pdf
+- https://www.fepc.or.jp/english/library/electricity_eview_japan/__icsFiles/afieldfile/2016/08/24/2016ERJ_full.pdf
+
