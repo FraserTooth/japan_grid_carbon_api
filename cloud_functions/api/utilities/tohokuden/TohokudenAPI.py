@@ -42,11 +42,12 @@ class TohokudenAPI(UtilityAPI):
         response = requests.get(
             "https://api.carbonintensity.org.uk/intensity/factors")
 
-        # Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
+        # Thermal Energy Percentages: https://www.tohoku-epco.co.jp/ir/report/factbook/pdf/fact01.pdf
+        # Numbers represent the proportions of energy use
         fossilFuelStations = {
-            "lng": 4.38 + 3.6 + 3.6 + 5.16 + 3.42 + 3.541 + 1.15 + 2 + 1.14,
-            "oil": 5.66 + 1.05 + 4.40,
-            "coal": 2
+            "lng": 24,
+            "oil": 2,
+            "coal": 23
         }
         totalFossil = fossilFuelStations["lng"] + \
             fossilFuelStations["oil"] + fossilFuelStations["coal"]
