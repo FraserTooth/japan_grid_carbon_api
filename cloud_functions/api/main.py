@@ -9,6 +9,9 @@ from pprint import pprint
 from utilities.tepco.TepcoAPI import TepcoAPI
 from utilities.tohokuden.TohokudenAPI import TohokudenAPI
 
+# Standard Response Messages for Errors
+BAD_UTILITY = 'Invalid Utility Specified'
+
 # Add CORS to All Requests
 headers = {
     'Access-Control-Allow-Origin': '*'
@@ -52,7 +55,7 @@ def daily_carbon_intensity(utility):
     utilityClass = selectUtility(utility)
 
     if utilityClass == None:
-        return f'Invalid utility specified', 400, headers
+        return BAD_UTILITY, 400, headers
 
     # Check Cache
     if "daily_intensity" in cache[utility]:
@@ -77,7 +80,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
 
     # Sense Check Utiltity
     if utilityClass == None:
-        return f'Invalid utility specified', 400, headers
+        return BAD_UTILITY, 400, headers
 
     # Check Breakdown Type
     breakdowns = {
