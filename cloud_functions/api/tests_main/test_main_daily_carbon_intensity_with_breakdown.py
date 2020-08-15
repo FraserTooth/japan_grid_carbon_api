@@ -1,6 +1,13 @@
 import pytest
 import json
-from main import daily_carbon_intensity_with_breakdown
+import gc
+from main import daily_carbon_intensity_with_breakdown, clearCache
+
+
+@pytest.fixture(autouse=True)
+def before_each():
+    clearCache('tepco')
+    gc.collect()
 
 
 def test_bad_utility():
@@ -37,3 +44,32 @@ def test_response(mocker):
 
     assert body == json.dumps(expectedData)
     assert code == 200
+
+
+def test_cache(mocker):
+
+    def mock_daily_intensity_by_month(self):
+        return 'xyz'
+
+    mocker.patch(
+        'utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_by_month',
+        mock_daily_intensity_by_month
+    )
+
+    body1, code1, cors1 = daily_carbon_intensity_with_breakdown(
+        "tepco", "month")
+    body2, code2, cors2 = daily_carbon_intensity_with_breakdown(
+        "tepco", "month")
+
+    expectedData1 = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    expectedData2 = {
+        "data": "xyz",
+        "fromCache": True
+    }
+
+    assert body1 == json.dumps(expectedData1)
+    assert body2 == json.dumps(expectedData2)

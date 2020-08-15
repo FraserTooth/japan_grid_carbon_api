@@ -32,6 +32,10 @@ def selectUtility(utility):
     return utilities.get(utility, None)
 
 
+def clearCache(utility):
+    cache[utility] = {}
+
+
 def main(request):
     with app.app_context():
         headers = werkzeug.datastructures.Headers()
