@@ -3,6 +3,7 @@ import requests
 import requests_mock
 import json
 import gc
+import pandas as pd
 from utilities.UtilityAPI import UtilityAPI
 
 uk_carbon_intensity_response = json.dumps({
@@ -27,12 +28,15 @@ uk_carbon_intensity_response = json.dumps({
 })
 
 
-def test_get_carbon_intensity_factors(requests_mock):
-
-    api = UtilityAPI('tepco')
-
+@pytest.fixture(autouse=True)
+def before_each(requests_mock):
     requests_mock.get(
         "https://api.carbonintensity.org.uk/intensity/factors", text=uk_carbon_intensity_response)
+
+
+def test_get_carbon_intensity_factors():
+
+    api = UtilityAPI('tepco')
 
     expected = {
         "kWh_nuclear": 0,
@@ -50,11 +54,8 @@ def test_get_carbon_intensity_factors(requests_mock):
     assert expected == api.get_carbon_intensity_factors()
 
 
-def test_daily_intensity(requests_mock):
+def test_gbq_query_string():
     api = UtilityAPI('tepco')
-
-    requests_mock.get(
-        "https://api.carbonintensity.org.uk/intensity/factors", text=uk_carbon_intensity_response)
 
     expected = """
         AVG((
@@ -73,3 +74,31 @@ def test_daily_intensity(requests_mock):
         """
 
     assert expected == api._get_intensity_query_string()
+
+
+def test_daily_intensity(mocker):
+    api = UtilityAPI('tepco')
+
+    def mock_daily_intensity(self):
+        d = {'hour': [1, 2], 'carbon_intensity': [500, 550]}
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        mock_daily_intensity
+    )
+
+    expected = {
+        "carbon_intensity_by_hour": [
+            {
+                "hour": 1,
+                "carbon_intensity": 500,
+            },
+            {
+                "hour": 2,
+                "carbon_intensity": 550,
+            }
+        ]
+    }
+
+    assert expected == api.daily_intensity()
