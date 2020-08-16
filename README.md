@@ -6,6 +6,7 @@ API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid..
 
 - Pipeline for Extracting and Formatting TEPCO Data
 - Combined and extensible endpoint using Flask routing
+- Added Pytest Tests
 - Implementation of the [Serverless](https://www.serverless.com/) deployment framework
 - Basic Website Built [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website)
 
@@ -44,6 +45,9 @@ gcloud functions logs read
 
 # Deploy All
 ./deployAll.sh
+
+# Run Tests
+pytest -vv
 ```
 ### Links Used when calculating the Carbon Intensities in Japan
 

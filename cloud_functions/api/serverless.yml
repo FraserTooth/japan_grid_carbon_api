@@ -22,6 +22,7 @@ package:
     - node_modules/**
     - .gitignore
     - .git/**
+    - test_*
 
 functions:
   main:
