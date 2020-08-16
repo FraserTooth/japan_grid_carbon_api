@@ -102,3 +102,47 @@ def test_daily_intensity(mocker):
     }
 
     assert expected == api.daily_intensity()
+
+
+def test_daily_intensity_by_month(mocker):
+    api = UtilityAPI('tepco')
+
+    def mock_daily_intensity_by_month(self):
+        d = {
+            'hour': [1, 2, 1, 2],
+            'carbon_intensity': [500, 550, 600, 650],
+            'month': [1, 1, 2, 2]
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        mock_daily_intensity_by_month
+    )
+
+    expected = {
+        "carbon_intensity_by_month": {
+            1: [
+                {
+                    "hour": 1,
+                    "carbon_intensity": 500,
+                },
+                {
+                    "hour": 2,
+                    "carbon_intensity": 550,
+                }
+            ],
+            2: [
+                {
+                    "hour": 1,
+                    "carbon_intensity": 600,
+                },
+                {
+                    "hour": 2,
+                    "carbon_intensity": 650,
+                }
+            ]
+        }
+    }
+
+    assert expected == api.daily_intensity_by_month()
