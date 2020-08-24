@@ -42,12 +42,12 @@ class KepcoAPI(UtilityAPI):
         response = requests.get(
             "https://api.carbonintensity.org.uk/intensity/factors")
 
-        # Thermal Energy Percentages: https://www.tohoku-epco.co.jp/ir/report/factbook/pdf/fact01.pdf
-        # Numbers represent the proportions of energy use
+        # Thermal Energy Percentages: https://www.kepco.co.jp/english/corporate/list/report/pdf/e2019.pdf
+        # Numbers represent the proportions of energy use as a percentage of their total energy use
         fossilFuelStations = {
-            "lng": 24,
-            "oil": 2,
-            "coal": 23
+            "lng": 37,
+            "oil": 9,
+            "coal": 18
         }
         totalFossil = fossilFuelStations["lng"] + \
             fossilFuelStations["oil"] + fossilFuelStations["coal"]
