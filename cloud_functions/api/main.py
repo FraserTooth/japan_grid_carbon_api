@@ -8,6 +8,7 @@ from pprint import pprint
 
 from utilities.tepco.TepcoAPI import TepcoAPI
 from utilities.tohokuden.TohokudenAPI import TohokudenAPI
+from utilities.kepco.KepcoAPI import KepcoAPI
 
 # Standard Response Messages for Errors
 BAD_UTILITY = 'Invalid Utility Specified'
@@ -20,14 +21,16 @@ headers = {
 
 cache = {
     "tepco": {},
-    "tohokuden": {}
+    "tohokuden": {},
+    "kepco": {}
 }
 
 
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAPI(),
-        "tohokuden": TohokudenAPI()
+        "tohokuden": TohokudenAPI(),
+        "kepco": KepcoAPI()
     }
     return utilities.get(utility, None)
 
