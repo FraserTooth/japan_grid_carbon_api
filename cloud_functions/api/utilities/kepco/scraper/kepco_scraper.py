@@ -3,6 +3,7 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime
+import io
 
 
 def _renameHeader(header):
@@ -10,15 +11,15 @@ def _renameHeader(header):
     translations = {
         "DATE_TIME": "datetime",
         "エリア需要〔MWh〕": "MWh_area_demand",
-        "水力〔MWh〕": "MWh_hydro",
-        "火力〔MWh〕": "MWh_fossil",
         "原子力〔MWh〕": "MWh_nuclear",
-        "太陽光実績〔MWh〕": "MWh_solar_output",
-        "太陽光抑制量〔MWh〕": "MWh_solar_throttling",
-        "風力実績〔MWh〕": "MWh_wind_output",
-        "風力抑制量〔MWh〕": "MWh_wind_throttling",
+        "火力〔MWh〕": "MWh_fossil",
+        "水力〔MWh〕": "MWh_hydro",
         "地熱〔MWh〕": "MWh_geothermal",
         "バイオマス〔MWh〕": "MWh_biomass",
+        "実績〔MWh〕": "MWh_solar_output",
+        "抑制量〔MWh〕": "MWh_solar_throttling",
+        "実績〔MWh〕.1": "MWh_wind_output",
+        "抑制量〔MWh〕.1": "MWh_wind_throttling",
         "揚水〔MWh〕": "MWh_pumped_storage",
         "連系線〔MWh〕": "MWh_interconnectors",
     }
@@ -70,7 +71,12 @@ def _parseKepcoCsvs():
     def _getKepcoCSV(url):
         print("  -- getting:", url)
         try:
-            data = pd.read_csv(url, skiprows=0, encoding="cp932", dtype=dtypes)
+            response = requests.get(url)
+
+            file_object = io.StringIO(response.content.decode('cp932'))
+
+            data = pd.read_csv(file_object, skiprows=1,
+                               encoding="cp932", dtype=dtypes)
         except Exception as e:
             print("Caught error \"{error}\" at {url}".format(
                 error=e, url=url))
