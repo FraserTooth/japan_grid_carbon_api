@@ -4,7 +4,7 @@ from utilities.UtilityAPI import UtilityAPI
 
 class KepcoAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("tohokuden")
+        super().__init__("kepco")
 
     def _get_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
@@ -55,7 +55,7 @@ class KepcoAPI(UtilityAPI):
         json = response.json()
         factors = json["data"][0]
 
-        print("Resolving Intensities for Tohoku")
+        print("Resolving Intensities for Kansai")
 
         return {
             "kWh_nuclear": factors["Nuclear"],
