@@ -48,6 +48,9 @@ gcloud functions logs read
 
 # Run Tests
 pytest -vv
+
+# PIP Freeze with Line to Get Around pkg-resources==0.0.0 bug in Linux
+pip freeze | grep -v "pkg-resources" > requirements.txt
 ```
 ### Links Used when calculating the Carbon Intensities in Japan
 
