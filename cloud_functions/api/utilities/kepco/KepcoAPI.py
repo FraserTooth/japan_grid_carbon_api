@@ -19,10 +19,18 @@ class KepcoAPI(UtilityAPI):
             (MWh_solar_output * {intensity_solar_output}) +
             (MWh_wind_output * {intensity_wind_output}) +
             (MWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(MWh_interconnectors > 0,MWh_interconnectors, 0) * {intensity_interconnectors}) 
-            ) / (MWh_area_demand)
+            (MWh_interconnector_contribution * {intensity_interconnectors}) 
+            ) / (MWh_total_generation)
             ) as carbon_intensity
-        FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+        FROM (
+            SELECT *,
+            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_pumped_storage + MWh_interconnector_contribution) as MWh_total_generation
+            FROM (
+                SELECT *,
+                if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,
+                FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            )
+        )
         """.format(
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
