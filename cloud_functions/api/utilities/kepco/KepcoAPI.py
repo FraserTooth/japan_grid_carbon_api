@@ -18,16 +18,17 @@ class KepcoAPI(UtilityAPI):
             (MWh_biomass * {intensity_biomass}) +
             (MWh_solar_output * {intensity_solar_output}) +
             (MWh_wind_output * {intensity_wind_output}) +
-            (MWh_pumped_storage * {intensity_pumped_storage}) +
+            (MWh_pumped_storage_contribution * {intensity_pumped_storage}) +
             (MWh_interconnector_contribution * {intensity_interconnectors}) 
             ) / (MWh_total_generation)
             ) as carbon_intensity
         FROM (
             SELECT *,
-            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_interconnector_contribution) as MWh_total_generation
+            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_pumped_storage_contribution + MWh_interconnector_contribution) as MWh_total_generation
             FROM (
                 SELECT *,
                 if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,
+                if(MWh_pumped_storage > 0,MWh_pumped_storage, 0) as MWh_pumped_storage_contribution,
                 FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
             )
         )
@@ -73,7 +74,8 @@ class KepcoAPI(UtilityAPI):
             "kWh_biomass": factors["Biomass"],
             "kWh_solar_output": factors["Solar"],
             "kWh_wind_output": factors["Wind"],
-            "kWh_pumped_storage": factors["Pumped Storage"],
+            # Not always charged when renewables available, average of this
+            "kWh_pumped_storage": 6.23,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 850
+            "kWh_interconnectors": 500
         }
