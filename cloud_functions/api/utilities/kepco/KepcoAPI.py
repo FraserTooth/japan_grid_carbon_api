@@ -24,7 +24,7 @@ class KepcoAPI(UtilityAPI):
             ) as carbon_intensity
         FROM (
             SELECT *,
-            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_pumped_storage + MWh_interconnector_contribution) as MWh_total_generation
+            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_interconnector_contribution) as MWh_total_generation
             FROM (
                 SELECT *,
                 if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,

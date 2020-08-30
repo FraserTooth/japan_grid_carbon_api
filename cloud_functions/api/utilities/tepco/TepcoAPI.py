@@ -24,7 +24,7 @@ class TepcoAPI(UtilityAPI):
             ) as carbon_intensity
         FROM (
             SELECT *,
-            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage + daMWh_interconnector_contribution) as daMWh_total_generation
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_interconnector_contribution) as daMWh_total_generation
             FROM (
                 SELECT *,
                 if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
