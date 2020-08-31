@@ -18,11 +18,20 @@ class TepcoAPI(UtilityAPI):
             (daMWh_biomass * {intensity_biomass}) +
             (daMWh_solar_output * {intensity_solar_output}) +
             (daMWh_wind_output * {intensity_wind_output}) +
-            (daMWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) * {intensity_interconnectors})
-            ) / daMWh_total
+            (daMWh_pumped_storage_contribution * {intensity_pumped_storage}) +
+            (daMWh_interconnector_contribution * {intensity_interconnectors})
+            ) / daMWh_total_generation
             ) as carbon_intensity
-        FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+        FROM (
+            SELECT *,
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
+            FROM (
+                SELECT *,
+                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
+                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
+                FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            )
+        )
         """.format(
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
@@ -64,7 +73,8 @@ class TepcoAPI(UtilityAPI):
             "kWh_biomass": factors["Biomass"],
             "kWh_solar_output": factors["Solar"],
             "kWh_wind_output": factors["Wind"],
-            "kWh_pumped_storage": factors["Pumped Storage"],
+            # Not always charged when renewables available, average of this
+            "kWh_pumped_storage": 80.07,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }
