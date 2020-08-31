@@ -9,9 +9,25 @@ jobs:
     executor: serverless/default
     steps:
       - checkout
-      - serverless/setup:
-          app-name: japan-grid-carbon-api
-          provider: google
+
+      # Download and cache dependencies
+      - restore_cache:
+        keys:
+          - v1-dependencies-
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+        name: Install Serverless CLI and dependencies
+        command: |
+          cd cloud_functions
+          sudo npm i -g serverless
+          npm install
+
+      - save_cache:
+        paths:
+          - node_modules
+        key: v1-dependencies-
       - run:
           command: ./deployAll.sh
           name: deploy
