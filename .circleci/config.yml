@@ -1,0 +1,25 @@
+version: 2.1
+
+orbs:
+  serverless-framework: circleci/serverless-framework@1.0.1
+
+jobs:
+  deploy:
+    executor: serverless/default
+    steps:
+      - checkout
+      - aws-cli/setup
+      - serverless/setup:
+          app-name: japan-grid-carbon-api
+          provider: google
+      - run:
+        command: pytest
+        name: test
+      - run:
+          command: ./deployAll.sh
+          name: deploy
+
+workflows:
+  deploy:
+    jobs:
+      - deploy
