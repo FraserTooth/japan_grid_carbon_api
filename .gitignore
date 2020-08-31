@@ -213,6 +213,7 @@ tmp
 
 # Google
 keyfile.json
+.gcloud/*
 
 # Logs
 *.log
