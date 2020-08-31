@@ -19,8 +19,7 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - gcp-cli/install_and_initialize_cli:
-          context: myContext
+      - gcp-cli/install_and_initialize_cli
       - deploy:
           requires:
             - gcp-cli/install_and_initialize_cli

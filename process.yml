@@ -1,0 +1,258 @@
+# Orb 'circleci/gcp-cli@1.0.0' resolved to 'circleci/gcp-cli@1.0.0'
+# Orb 'circleci/serverless-framework@1.0.1' resolved to 'circleci/serverless-framework@1.0.1'
+version: 2
+jobs:
+  gcp-cli/install_and_initialize_cli:
+    docker:
+    - image: circleci/python:2.7-stretch
+    steps:
+    - run:
+        name: Install gcloud CLI, if not available
+        command: |
+          # Set sudo to work whether logged in as root user or non-root user
+          if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+
+          # Create an environment variable for the correct distribution
+          if [[ $(command -v lsb_release) == "" ]]; then
+            $SUDO apt-get update && $SUDO apt-get -y install lsb-release
+            export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+          else
+            export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+          fi
+
+          # Add the Google Cloud SDK distribution URI as a package source
+          echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | $SUDO tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          # Import the Google Cloud public key
+          if [[ $(command -v curl) == "" ]]; then
+            $SUDO apt-get update && $SUDO apt-get -y install curl
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | $SUDO apt-key add -
+          else
+            curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | $SUDO apt-key add -
+          fi
+
+          # Update and install the Cloud SDK
+          if [[ $(command -v gcloud) == "" ]]; then
+            $SUDO apt-get update && $SUDO apt-get -y install google-cloud-sdk
+            echo "gcloud CLI is now installed."
+          else
+            echo "gcloud CLI is already installed."
+          fi
+    - run:
+        name: Initialize gcloud CLI to connect to Google Cloud
+        command: |
+          # Set sudo to work whether logged in as root user or non-root user
+          if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+
+          # Store service account
+          echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+
+          # Initialize gcloud CLI
+          $SUDO gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+          $SUDO gcloud --quiet config set project $GOOGLE_PROJECT_ID
+          $SUDO gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
+    - run:
+        command: gcloud -v
+  deploy:
+    docker:
+    - image: cimg/python:3.8-node
+    steps:
+    - checkout
+    - run:
+        command: |
+          SLS_ORB_PROVIDER_PARAM="google"
+          echo "export SLS_ORB_PROVIDER_PARAM=$SLS_ORB_PROVIDER_PARAM" >> "$BASH_ENV"
+          ###
+          # Helper functions
+          ###
+          output_Provider_Selected () {
+            echo "................................."
+            echo " $1 Selected."
+            echo "................................."
+            echo
+          }
+
+          ###
+          # Provider check functions
+          ###
+          AWS_Check () {
+            output_Provider_Selected "AWS"
+            if [[ $(command -v aws --version >/dev/null 2>&1) == 1 ]]; then
+              echo "ERROR: AWS CLI NOT INSTALLED"
+              TipMsg_Install_AWS
+              exit 1
+            fi
+            if [[ -z $AWS_ACCESS_KEY_ID || -z $AWS_SECRET_ACCESS_KEY ]]; then
+              if [[ ! -f ~/.aws/credentials ]]; then
+                echo "ERROR: CREDENTIALS NOT FOUND"
+                TipMsg_Install_AWS
+                exit 1
+              fi
+            fi
+            TipMsg_Install_AWS () {
+              echo "
+              ---
+              Tip: Install the AWS CLI and authenticate prior to running the Serverless setup command.
+              Consider using the AWS CLI orb: https://circleci.com/orbs/registry/orb/circleci/aws-cli#usage-install_aws_cli
+
+              Import the AWS CLI Orb To Your Config:
+              ---
+                orbs:
+                  aws-cli: circleci/aws-cli@x.y
+              ---
+
+              Run The AWS Setup Command Prior To The Serverless Command:
+              ---
+                steps:
+                  - aws-cli/setup
+                  - serverless/setup
+              ---
+              "
+            }
+          }
+          azure_Check () {
+            output_Provider_Selected "Azure"
+            if [[ -z $AZURE_SUBSCRIPTION_ID || -z $AZURE_TENANT_ID || -z $AZURE_CLIENT_ID || -z $AZURE_CLIENT_SECRET ]]; then
+              echo "
+              ---
+              ERROR: No Azure credentials provided!
+
+              We were unable to find a value for one or more of the following required environment variables:
+              ---
+                AZURE_SUBSCRIPTION_ID
+                AZURE_TENANT_ID
+                AZURE_CLIENT_ID
+                AZURE_CLIENT_SECRET
+              ---
+
+              The Serverless Framework needs access to Azure account credentials so that it can create and manage resources on your behalf.
+
+              Docs: https://serverless.com/framework/docs/providers/azure/guide/credentials/
+              "
+              exit 1
+            fi
+          }
+          tencent_Check () {
+            output_Provider_Selected "Tencent"
+          }
+          knative_Check () {
+            output_Provider_Selected "Knative"
+          }
+          alibaba_Check () {
+            output_Provider_Selected "Alibaba"
+          }
+          cloudflare_Check () {
+            output_Provider_Selected "Cloudflare"
+          }
+          fn_Check () {
+            output_Provider_Selected "fn"
+          }
+          kubeless_Check () {
+            output_Provider_Selected "Kubeless"
+          }
+          openwhisk_Check () {
+            output_Provider_Selected "OpenWhisk"
+          }
+          spotinist_Check () {
+            output_Provider_Selected "Spotinist"
+          }
+          ###
+          # Call provider based on parameter
+          ###
+          case $SLS_ORB_PROVIDER_PARAM in
+            "AWS")
+              AWS_Check
+              ;;
+            "azure")
+              azure_Check
+              ;;
+            "tencent")
+              tencent_Check
+              ;;
+            "knative")
+              knative_Check
+              ;;
+            "alibaba")
+              alibaba_Check
+              ;;
+            "cloudflare")
+              cloudflare_Check
+              ;;
+            "fn")
+              fn_Check
+              ;;
+            "kubeless")
+              kubeless_Check
+              ;;
+            "openwhisk")
+              openwhisk_Check
+              ;;
+            "spotinist")
+              spotinist_Check
+              ;;
+            *)
+              other_Check
+          esac
+        name: Provider Check
+    - run:
+        command: |
+          # install
+          curl -o- -L https://slss.io/install | bash
+          echo "export PATH=$HOME/.serverless/bin:$PATH" >> "$BASH_ENV"
+          source "$BASH_ENV"
+          # Check for Serverless key
+          if [ -z "$SERVERLESS_ACCESS_KEY" ]; then
+            echo "Error: The environment variable SERVERLESS_ACCESS_KEY is empty.
+              Please create your serverless dashboard access key and add it to this project as a project environment vairable
+              or via contexts.
+              https://serverless.com/framework/docs/dashboard/cicd/running-in-your-own-cicd#configure-environment-variables"
+          else
+            SERVERLESS_ORB_ORG_NAME=""
+            SERVERLESS_ORB_APP_NAME="japan-grid-carbon-api"
+            if [[ -n "$SERVERLESS_ORB_ORG_NAME" && -n "$SERVERLESS_ORB_APP_NAME" ]]; then
+              # Autoamtically connect to service (or create one) if org name and app name are present.
+              echo y | serverless --org "$SERVERLESS_ORB_ORG_NAME" --app "$SERVERLESS_ORB_APP_NAME"
+            else
+              echo "WARNING: No Org name or App name detected. NOT connected to a service."
+            fi
+          fi
+        name: Install Serverless CLI
+    - run:
+        command: ./deployAll.sh
+        name: deploy
+workflows:
+  build-and-deploy:
+    jobs:
+    - gcp-cli/install_and_initialize_cli:
+        context: myContext
+    - deploy:
+        requires:
+        - gcp-cli/install_and_initialize_cli
+  version: 2
+
+# Original config.yml file:
+# version: 2.1
+# 
+# orbs:
+#   gcp-cli: circleci/gcp-cli@1.0.0
+#   serverless: circleci/serverless-framework@1.0.1
+# 
+# jobs:
+#   deploy:
+#     executor: serverless/default
+#     steps:
+#       - checkout
+#       - serverless/setup:
+#           app-name: japan-grid-carbon-api
+#           provider: google
+#       - run:
+#           command: ./deployAll.sh
+#           name: deploy
+# 
+# workflows:
+#   build-and-deploy:
+#     jobs:
+#       - gcp-cli/install_and_initialize_cli:
+#           context: myContext
+#       - deploy:
+#           requires:
+#             - gcp-cli/install_and_initialize_cli
