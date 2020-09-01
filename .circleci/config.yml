@@ -36,6 +36,7 @@ jobs:
       - run:
           name: deploy
           command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-api-keyfile.json
             cd cloud_functions/api/
             gcloud functions set-iam-policy --region=us-central1 api policy.json
             sls deploy
