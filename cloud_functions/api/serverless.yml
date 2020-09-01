@@ -10,7 +10,7 @@ provider:
   # https://serverless.com/framework/docs/providers/google/guide/credentials/
   #
   # the path to the credentials file needs to be absolute
-  credentials: ~/.gcloud/japan-grid-carbon-api-keyfile.json
+  credentials: ~/gcloud-service-key.json
 
 plugins:
   - serverless-google-cloudfunctions
