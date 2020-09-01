@@ -10,6 +10,10 @@ jobs:
     steps:
       - checkout
 
+      - gcp-cli/install
+
+      - gcp-cli/initialize
+
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -39,11 +43,7 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - gcp-cli/install_and_initialize_cli:
-          context: japan-grid-carbon-api
       - deploy:
-          requires:
-            - gcp-cli/install_and_initialize_cli
           filters:
             branches:
               only:
