@@ -30,8 +30,11 @@ jobs:
           key: v1-dependencies-
 
       - run:
-          command: ./deployAll.sh
           name: deploy
+          command: |
+            pwd
+            gcloud functions set-iam-policy --region=us-central1 api policy.json
+            sls deploy
 
 workflows:
   build-and-deploy:
@@ -41,3 +44,7 @@ workflows:
       - deploy:
           requires:
             - gcp-cli/install_and_initialize_cli
+          filters:
+            branches:
+              only:
+                - master
