@@ -25,7 +25,7 @@ package:
     - test_*
 
 functions:
-  main:
+  api:
     name: api
     handler: main
     memorySize: 128
