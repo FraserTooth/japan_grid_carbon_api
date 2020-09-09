@@ -5,6 +5,15 @@ orbs:
   serverless: circleci/serverless-framework@1.0.1
 
 jobs:
+  test:
+    executor: serverless/default
+    steps:
+      - checkout
+
+      - run:
+          name: test
+          command: pytest
+
   deploy:
     executor: serverless/default
     steps:
@@ -41,10 +50,15 @@ jobs:
             sls deploy
 
 workflows:
-  build-and-deploy:
+  build-test-and-deploy:
     jobs:
+      - test:
+          context: japan-grid-carbon-api
+
       - deploy:
           context: japan-grid-carbon-api
+          requires:
+            - test
           filters:
             branches:
               only:
