@@ -11,6 +11,10 @@ jobs:
       - checkout
 
       - run:
+          name: install pytest
+          command: pip install pytest
+
+      - run:
           name: test
           command: pytest
 
