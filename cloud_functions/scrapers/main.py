@@ -4,16 +4,10 @@ import werkzeug.datastructures
 from flask import Flask
 app = Flask(__name__)
 
-from area_data import AreaDataScraper
+from area_data.AreaDataScraper import AreaDataScraper
 
 
-def selectUtility(utility):
-    utilities = {
-        "tepco": TepcoAPI(),
-        "tohokuden": TohokudenAPI(),
-        "kepco": KepcoAPI()
-    }
-    return utilities.get(utility, None)
+headers = {}
 
 
 def main(request):

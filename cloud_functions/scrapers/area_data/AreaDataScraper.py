@@ -1,31 +1,16 @@
-import tepco_scraper as scraper
 import json
 from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 
-from utilities.tepco.TepcoScraper import TepcoAreaScraper
+from area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 
 
 def selectUtility(utility):
     utilities = {
-        "tepco": TepcoScraper(),
+        "tepco": TepcoAreaScraper(),
     }
     return utilities.get(utility, None)
-
-
-class BigQueryError(Exception):
-    '''Exception raised whenever a BigQuery error happened'''
-
-    def __init__(self, errors):
-        super().__init__(self._format(errors))
-        self.errors = errors
-
-    def _format(self, errors):
-        err = []
-        for error in errors:
-            err.extend(error['errors'])
-        return json.dumps(err)
 
 
 class AreaDataScraper:
@@ -33,11 +18,9 @@ class AreaDataScraper:
         self.utility = utility
         self.scraper = selectUtility(utility)
 
-    def scrape(self, request):
-        request_json = request.get_json(silent=True)
-
-        print("Scraping:")
-        df = scraper.get_dataframe()
+    def scrape(self):
+        print("Scraping AreaData for {}:".format(self.utility))
+        df = self.scraper.get_dataframe()
         print(" - Got Data")
         print("Converting:")
 
@@ -59,7 +42,7 @@ class AreaDataScraper:
         bucket = CS.get_bucket(BUCKET_NAME)
         blob = bucket.blob(BLOB_NAME)
 
-        blob.upload_from_string(scraper.convert_df_to_csv(df))
+        blob.upload_from_string(self.scraper.convert_df_to_csv(df))
 
         print('Scraped Data Uploaded to {}.'.format(BLOB_NAME))
 
@@ -69,4 +52,18 @@ class AreaDataScraper:
 
         table_id = BQ_DATASET + "." + BQ_TABLE
 
-        df.to_gbq(table_id, if_exisscraper="replace")
+        df.to_gbq(table_id, if_exists="replace")
+
+
+class BigQueryError(Exception):
+    '''Exception raised whenever a BigQuery error happened'''
+
+    def __init__(self, errors):
+        super().__init__(self._format(errors))
+        self.errors = errors
+
+    def _format(self, errors):
+        err = []
+        for error in errors:
+            err.extend(error['errors'])
+        return json.dumps(err)

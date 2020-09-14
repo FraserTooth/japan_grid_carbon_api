@@ -6,32 +6,6 @@ import datetime
 
 
 class TepcoAreaScraper:
-    def __init__(self):
-
-    def _renameHeader(header):
-
-        translations = {
-            "Unnamed: 0": "date",
-            "Unnamed: 1": "time",
-            "Unnamed: 0_Unnamed: 1": "datetime",
-            "Unnamed: 2": "daMWh_demand",
-            "原子力": "daMWh_nuclear",
-            "火力": "daMWh_fossil",
-            "水力": "daMWh_hydro",
-            "地熱": "daMWh_geothermal",
-            "バイオマス": "daMWh_biomass",
-            "太陽光発電実績": "daMWh_solar_output",
-            "太陽光出力制御量": "daMWh_solar_throttling",
-            "風力発電実績": "daMWh_wind_output",
-            "風力出力制御量": "daMWh_wind_throttling",
-            "揚水": "daMWh_pumped_storage",
-            "連系線": "daMWh_interconnectors",
-            "合計": "daMWh_total"
-        }
-
-        if header in translations:
-            return translations[header]
-        return header
 
     def _parseTepcoCsvs(self):
         CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
@@ -59,7 +33,31 @@ class TepcoAreaScraper:
             "合計": int
         }
 
-        def _getTEPCOCSV(self, url):
+        def _renameHeader(header):
+            translations = {
+                "Unnamed: 0": "date",
+                "Unnamed: 1": "time",
+                "Unnamed: 0_Unnamed: 1": "datetime",
+                "Unnamed: 2": "daMWh_demand",
+                "原子力": "daMWh_nuclear",
+                "火力": "daMWh_fossil",
+                "水力": "daMWh_hydro",
+                "地熱": "daMWh_geothermal",
+                "バイオマス": "daMWh_biomass",
+                "太陽光発電実績": "daMWh_solar_output",
+                "太陽光出力制御量": "daMWh_solar_throttling",
+                "風力発電実績": "daMWh_wind_output",
+                "風力出力制御量": "daMWh_wind_throttling",
+                "揚水": "daMWh_pumped_storage",
+                "連系線": "daMWh_interconnectors",
+                "合計": "daMWh_total"
+            }
+
+            if header in translations:
+                return translations[header]
+            return header
+
+        def _getTEPCOCSV(url):
             print("  -- getting:", url)
             return pd.read_csv(url, skiprows=2, encoding="cp932",
                                parse_dates=[[0, 1]], dtype=dtypes, thousands=",")
@@ -72,7 +70,7 @@ class TepcoAreaScraper:
 
         # Translate Column Headers
         print("Renaming Columns")
-        df = df.rename(columns=lambda x: self._renameHeader(x), errors="raise")
+        df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
         return df
 
