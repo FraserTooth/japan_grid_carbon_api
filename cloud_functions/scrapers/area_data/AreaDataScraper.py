@@ -5,11 +5,13 @@ from google.api_core import retry
 
 from area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 from area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
+from area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
 
 
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAreaScraper(),
+        "tohokuden": TohokudenAreaScraper(),
         "kepco": KepcoAreaScraper()
     }
     return utilities.get(utility, None)
@@ -21,7 +23,7 @@ class AreaDataScraper:
         self.scraper = selectUtility(utility)
 
     def scrape(self):
-        print("Scraping AreaData for {}:".format(self.utility))
+        print("Scraping Area Data for {}:".format(self.utility))
         df = self.scraper.get_dataframe()
         print(" - Got Data")
         print("Converting:")
