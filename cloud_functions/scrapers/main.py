@@ -4,7 +4,7 @@ import werkzeug.datastructures
 from flask import Flask
 app = Flask(__name__)
 
-from area_data.AreaDataScraper import AreaDataScraper
+from scrapers.area_data.AreaDataScraper import AreaDataScraper
 
 
 headers = {}
@@ -13,7 +13,7 @@ headers = {}
 BAD_UTILITY = 'Invalid Utility Specified'
 
 
-def main(request):
+def scrapers(request):
     with app.app_context():
         headers = werkzeug.datastructures.Headers()
         for key, value in request.headers.items():

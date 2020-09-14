@@ -3,9 +3,9 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 
-from area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
-from area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
-from area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
+from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
+from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
+from scrapers.area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
 
 
 def selectUtility(utility):

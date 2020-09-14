@@ -1,5 +1,5 @@
 import requests
-from utilities.UtilityAPI import UtilityAPI
+from api.utilities.UtilityAPI import UtilityAPI
 
 
 class TohokudenAPI(UtilityAPI):
