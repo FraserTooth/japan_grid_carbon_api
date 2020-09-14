@@ -4,11 +4,13 @@ from google.cloud import bigquery
 from google.api_core import retry
 
 from area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
+from area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
 
 
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAreaScraper(),
+        "kepco": KepcoAreaScraper()
     }
     return utilities.get(utility, None)
 

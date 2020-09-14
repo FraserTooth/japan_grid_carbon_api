@@ -9,6 +9,9 @@ from area_data.AreaDataScraper import AreaDataScraper
 
 headers = {}
 
+# Standard Response Messages for Errors
+BAD_UTILITY = 'Invalid Utility Specified'
+
 
 def main(request):
     with app.app_context():

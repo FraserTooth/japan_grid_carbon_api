@@ -7,7 +7,7 @@ import datetime
 
 class TepcoAreaScraper:
 
-    def _parseTepcoCsvs(self):
+    def _parseCsvs(self):
         CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
 
         CSV_URLS = [
@@ -75,7 +75,7 @@ class TepcoAreaScraper:
         return df
 
     def get_json(self):
-        df = self._parseTepcoCsvs()
+        df = self._parseCsvs()
         return df.to_json(orient='index', date_format="iso")
 
     def convert_df_to_json(self, df):
@@ -83,11 +83,11 @@ class TepcoAreaScraper:
         return df.to_json(orient='index', date_format="iso")
 
     def get_csv(self):
-        df = self._parseTepcoCsvs()
+        df = self._parseCsvs()
         return df.to_csv(index=False)
 
     def convert_df_to_csv(self, df):
         return df.to_csv(index=False)
 
     def get_dataframe(self):
-        return self._parseTepcoCsvs()
+        return self._parseCsvs()
