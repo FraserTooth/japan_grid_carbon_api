@@ -4,7 +4,7 @@ import requests_mock
 import json
 import gc
 import pandas as pd
-from utilities.UtilityAPI import UtilityAPI
+from .UtilityAPI import UtilityAPI
 
 uk_carbon_intensity_response = json.dumps({
     "data": [

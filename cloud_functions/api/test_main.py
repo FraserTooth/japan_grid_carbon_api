@@ -1,7 +1,7 @@
 import pytest
 import json
 import gc
-from main import daily_carbon_intensity, daily_carbon_intensity_with_breakdown, clearCache
+from .main import daily_carbon_intensity, daily_carbon_intensity_with_breakdown, clearCache
 
 
 # Before All

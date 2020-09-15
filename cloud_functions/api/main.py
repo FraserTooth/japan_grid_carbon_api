@@ -6,9 +6,9 @@ app = Flask(__name__)
 
 from pprint import pprint
 
-from api.utilities.tepco.TepcoAPI import TepcoAPI
-from api.utilities.tohokuden.TohokudenAPI import TohokudenAPI
-from api.utilities.kepco.KepcoAPI import KepcoAPI
+from .utilities.tepco.TepcoAPI import TepcoAPI
+from .utilities.tohokuden.TohokudenAPI import TohokudenAPI
+from .utilities.kepco.KepcoAPI import KepcoAPI
 
 # Standard Response Messages for Errors
 BAD_UTILITY = 'Invalid Utility Specified'
