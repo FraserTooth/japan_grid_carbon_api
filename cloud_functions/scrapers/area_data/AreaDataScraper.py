@@ -6,13 +6,15 @@ from google.api_core import retry
 from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
 from scrapers.area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
+from scrapers.area_data.utilities.chuden.ChudenAreaScraper import ChudenAreaScraper
 
 
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAreaScraper(),
         "tohokuden": TohokudenAreaScraper(),
-        "kepco": KepcoAreaScraper()
+        "kepco": KepcoAreaScraper(),
+        "chuden": ChudenAreaScraper()
     }
     return utilities.get(utility, None)
 
