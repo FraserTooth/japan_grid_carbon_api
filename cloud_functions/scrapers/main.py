@@ -38,6 +38,12 @@ def area_data(utility):
     if s.scraper == None:
         return BAD_UTILITY, 400, headers
 
-    result = s.scrape()
+    numRows = s.scrape()
 
-    return json.dumps("SUCCESS"), 200, headers
+    response = {
+        "result": "success",
+        "rows": numRows,
+        "utility": utility
+    }
+
+    return json.dumps(response), 200, headers

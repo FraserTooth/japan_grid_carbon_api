@@ -25,7 +25,8 @@ class AreaDataScraper:
     def scrape(self):
         print("Scraping Area Data for {}:".format(self.utility))
         df = self.scraper.get_dataframe()
-        print(" - Got Data")
+        numRows = len(df.index)
+        print(" - Got {} rows of Data".format(numRows))
         print("Converting:")
 
         print("Sending:")
@@ -34,7 +35,7 @@ class AreaDataScraper:
 
         self._insert_into_bigquery(df)
         print(" - Sent to BigQuery")
-        return f'Success!'
+        return numRows
 
     def _upload_blob_to_storage(self, df):
         CS = storage.Client()
