@@ -64,7 +64,7 @@ class HepcoAPI(UtilityAPI):
         json = response.json()
         factors = json["data"][0]
 
-        print("Resolving Intensities for Chuden")
+        print("Resolving Intensities for Hepco")
 
         return {
             "kWh_nuclear": factors["Nuclear"],
