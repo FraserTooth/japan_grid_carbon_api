@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Install Serverless CLI and dependencies
           command: |
-            cd cloud_functions/api/
+            cd cloud_functions/
             sudo npm i -g serverless
             npm install
 
@@ -49,7 +49,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            cd cloud_functions/api/
+            cd cloud_functions/
             gcloud functions set-iam-policy --region=us-central1 api policy.json
             sls deploy
 

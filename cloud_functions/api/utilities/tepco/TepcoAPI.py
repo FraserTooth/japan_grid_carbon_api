@@ -1,5 +1,5 @@
 import requests
-from utilities.UtilityAPI import UtilityAPI
+from ..UtilityAPI import UtilityAPI
 
 
 class TepcoAPI(UtilityAPI):

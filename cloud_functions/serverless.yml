@@ -27,8 +27,15 @@ package:
 functions:
   api:
     name: api
-    handler: main
+    handler: api
     memorySize: 128
+    timeout: 120s
+    events:
+      - http: path
+  scrapers:
+    name: scrapers
+    handler: scrapers
+    memorySize: 256
     timeout: 120s
     events:
       - http: path

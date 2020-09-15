@@ -1,7 +1,7 @@
 import pytest
 import json
 import gc
-from main import daily_carbon_intensity, daily_carbon_intensity_with_breakdown, clearCache
+from .main import daily_carbon_intensity, daily_carbon_intensity_with_breakdown, clearCache
 
 
 # Before All
@@ -22,12 +22,9 @@ def test_daily_carbon_intensity_bad_utility():
 
 def test_daily_carbon_intensity_response(mocker):
 
-    def mock_daily_intensity(self):
-        return 'xyz'
-
     mocker.patch(
-        'utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity',
-        mock_daily_intensity
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity',
+        return_value='xyz'
     )
 
     body, code, cors = daily_carbon_intensity("tepco")
@@ -43,12 +40,9 @@ def test_daily_carbon_intensity_response(mocker):
 
 def test_daily_carbon_intensity_cache(mocker):
 
-    def mock_daily_intensity(self):
-        return 'xyz'
-
     mocker.patch(
-        'utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity',
-        mock_daily_intensity
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity',
+        return_value='xyz'
     )
 
     body1, code1, cors1 = daily_carbon_intensity("tepco")
@@ -87,12 +81,9 @@ def test_daily_carbon_intensity_with_breakdown_bad_breakdown():
 
 def test_daily_carbon_intensity_with_breakdown_response(mocker):
 
-    def mock_daily_intensity_by_month(self):
-        return 'xyz'
-
     mocker.patch(
-        'utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_by_month',
-        mock_daily_intensity_by_month
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_by_month',
+        return_value='xyz'
     )
 
     body, code, cors = daily_carbon_intensity_with_breakdown(
@@ -109,12 +100,9 @@ def test_daily_carbon_intensity_with_breakdown_response(mocker):
 
 def test_daily_carbon_intensity_with_breakdown_cache(mocker):
 
-    def mock_daily_intensity_by_month(self):
-        return 'xyz'
-
     mocker.patch(
-        'utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_by_month',
-        mock_daily_intensity_by_month
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_by_month',
+        return_value='xyz'
     )
 
     body1, code1, cors1 = daily_carbon_intensity_with_breakdown(

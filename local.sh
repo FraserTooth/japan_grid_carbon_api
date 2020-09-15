@@ -1,13 +1,12 @@
 #!/bin/bash
-FOLDER=$1
-FUNCTION=$2
+FUNCTION=$1
 DIR="$PWD"
 export GCP_PROJECT="japan-grid-carbon-api"
 
 export GOOGLE_APPLICATION_CREDENTIALS="$DIR/.gcloud/keyfile.json"
 
-echo "Locally Running Function $FUNCTION for $FOLDER"
-cd cloud_functions/$FOLDER/
+echo "Locally Running Function $FUNCTION"
+cd cloud_functions/
 
 functions-framework --target $FUNCTION --debug
 
