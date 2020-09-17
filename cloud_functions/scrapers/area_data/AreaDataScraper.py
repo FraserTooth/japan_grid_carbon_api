@@ -10,6 +10,7 @@ from scrapers.area_data.utilities.chuden.ChudenAreaScraper import ChudenAreaScra
 from scrapers.area_data.utilities.hepco.HepcoAreaScraper import HepcoAreaScraper
 from scrapers.area_data.utilities.rikuden.RikudenAreaScraper import RikudenAreaScraper
 from scrapers.area_data.utilities.cepco.CepcoAreaScraper import CepcoAreaScraper
+from scrapers.area_data.utilities.yonden.YondenAreaScraper import YondenAreaScraper
 
 
 def selectUtility(utility):
@@ -21,6 +22,7 @@ def selectUtility(utility):
         "hepco": HepcoAreaScraper(),
         "rikuden": RikudenAreaScraper(),
         "cepco": CepcoAreaScraper(),
+        "yonden": YondenAreaScraper(),
     }
     return utilities.get(utility, None)
 

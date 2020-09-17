@@ -92,8 +92,6 @@ class CepcoAreaScraper:
         print("Renaming Columns")
         df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
-        print(df.info)
-        print(df.dtypes)
         return df
 
     def get_json(self):
