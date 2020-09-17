@@ -82,8 +82,8 @@ class CepcoAPI(UtilityAPI):
             "kWh_biomass": factors["Biomass"],
             "kWh_solar_output": factors["Solar"],
             "kWh_wind_output": factors["Wind"],
-            # Appears to always get charge when renewables available
-            "kWh_pumped_storage": 0,
+            # Not always charged when renewables available, average of this
+            "kWh_pumped_storage": 19.75,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }
