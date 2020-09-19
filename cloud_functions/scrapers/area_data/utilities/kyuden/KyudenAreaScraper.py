@@ -114,13 +114,14 @@ class KyudenAreaScraper:
                     names=headersList,
                     usecols=range(len(headersList)),
                     converters=converters
-                    # dtype=dtypes
                 )
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
                 return None
-            return data.dropna(thresh=8)
+
+            data = data.dropna()
+            return data
 
         print("Reading CSVs")
 
@@ -132,6 +133,11 @@ class KyudenAreaScraper:
         # Set Dtypes
         df = df.apply(
             lambda x: pd.to_numeric(x, errors='coerce', downcast="integer") if x.name != "datetime" else x)
+        # Convert Throttling to INT (for now TODO: move everything to float)
+        df['MWh_solar_throttling'] = df['MWh_solar_throttling'].apply(
+            lambda x: int(x))
+        df['MWh_wind_throttling'] = df['MWh_wind_throttling'].apply(
+            lambda x: int(x))
 
         print(df.info)
         print(df.dtypes)
