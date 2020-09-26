@@ -12,6 +12,7 @@ from scrapers.area_data.utilities.rikuden.RikudenAreaScraper import RikudenAreaS
 from scrapers.area_data.utilities.cepco.CepcoAreaScraper import CepcoAreaScraper
 from scrapers.area_data.utilities.yonden.YondenAreaScraper import YondenAreaScraper
 from scrapers.area_data.utilities.kyuden.KyudenAreaScraper import KyudenAreaScraper
+from scrapers.area_data.utilities.okiden.OkidenAreaScraper import OkidenAreaScraper
 
 
 def selectUtility(utility):
@@ -25,6 +26,7 @@ def selectUtility(utility):
         "cepco": CepcoAreaScraper(),
         "yonden": YondenAreaScraper(),
         "kyuden": KyudenAreaScraper(),
+        "okiden": OkidenAreaScraper(),
     }
     return utilities.get(utility, None)
 
@@ -39,7 +41,6 @@ class AreaDataScraper:
         df = self.scraper.get_dataframe()
         numRows = len(df.index)
         print(" - Got {} rows of Data".format(numRows))
-        print("Converting:")
 
         print("Sending:")
         self._upload_blob_to_storage(df)
