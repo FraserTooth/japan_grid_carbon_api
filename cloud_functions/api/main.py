@@ -15,6 +15,7 @@ from .utilities.rikuden.RikudenAPI import RikudenAPI
 from .utilities.cepco.CepcoAPI import CepcoAPI
 from .utilities.yonden.YondenAPI import YondenAPI
 from .utilities.kyuden.KyudenAPI import KyudenAPI
+from .utilities.okiden.OkidenAPI import OkidenAPI
 
 # Standard Response Messages for Errors
 BAD_UTILITY = 'Invalid Utility Specified'
@@ -35,6 +36,7 @@ cache = {
     "cepco": {},
     "yonden": {},
     "kyuden": {},
+    "okiden": {},
 }
 
 
@@ -49,6 +51,7 @@ def selectUtility(utility):
         "cepco": CepcoAPI(),
         "yonden": YondenAPI(),
         "kyuden": KyudenAPI(),
+        "okiden": OkidenAPI(),
     }
     return utilities.get(utility, None)
 
