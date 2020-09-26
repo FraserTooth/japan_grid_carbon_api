@@ -9,6 +9,13 @@ from pprint import pprint
 from .utilities.tepco.TepcoAPI import TepcoAPI
 from .utilities.tohokuden.TohokudenAPI import TohokudenAPI
 from .utilities.kepco.KepcoAPI import KepcoAPI
+from .utilities.chuden.ChudenAPI import ChudenAPI
+from .utilities.hepco.HepcoAPI import HepcoAPI
+from .utilities.rikuden.RikudenAPI import RikudenAPI
+from .utilities.cepco.CepcoAPI import CepcoAPI
+from .utilities.yonden.YondenAPI import YondenAPI
+from .utilities.kyuden.KyudenAPI import KyudenAPI
+from .utilities.okiden.OkidenAPI import OkidenAPI
 
 # Standard Response Messages for Errors
 BAD_UTILITY = 'Invalid Utility Specified'
@@ -22,7 +29,14 @@ headers = {
 cache = {
     "tepco": {},
     "tohokuden": {},
-    "kepco": {}
+    "kepco": {},
+    "chuden": {},
+    "hepco": {},
+    "rikuden": {},
+    "cepco": {},
+    "yonden": {},
+    "kyuden": {},
+    "okiden": {},
 }
 
 
@@ -30,7 +44,14 @@ def selectUtility(utility):
     utilities = {
         "tepco": TepcoAPI(),
         "tohokuden": TohokudenAPI(),
-        "kepco": KepcoAPI()
+        "kepco": KepcoAPI(),
+        "chuden": ChudenAPI(),
+        "hepco": HepcoAPI(),
+        "rikuden": RikudenAPI(),
+        "cepco": CepcoAPI(),
+        "yonden": YondenAPI(),
+        "kyuden": KyudenAPI(),
+        "okiden": OkidenAPI(),
     }
     return utilities.get(utility, None)
 

@@ -6,13 +6,27 @@ from google.api_core import retry
 from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
 from scrapers.area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
+from scrapers.area_data.utilities.chuden.ChudenAreaScraper import ChudenAreaScraper
+from scrapers.area_data.utilities.hepco.HepcoAreaScraper import HepcoAreaScraper
+from scrapers.area_data.utilities.rikuden.RikudenAreaScraper import RikudenAreaScraper
+from scrapers.area_data.utilities.cepco.CepcoAreaScraper import CepcoAreaScraper
+from scrapers.area_data.utilities.yonden.YondenAreaScraper import YondenAreaScraper
+from scrapers.area_data.utilities.kyuden.KyudenAreaScraper import KyudenAreaScraper
+from scrapers.area_data.utilities.okiden.OkidenAreaScraper import OkidenAreaScraper
 
 
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAreaScraper(),
         "tohokuden": TohokudenAreaScraper(),
-        "kepco": KepcoAreaScraper()
+        "kepco": KepcoAreaScraper(),
+        "chuden": ChudenAreaScraper(),
+        "hepco": HepcoAreaScraper(),
+        "rikuden": RikudenAreaScraper(),
+        "cepco": CepcoAreaScraper(),
+        "yonden": YondenAreaScraper(),
+        "kyuden": KyudenAreaScraper(),
+        "okiden": OkidenAreaScraper(),
     }
     return utilities.get(utility, None)
 
@@ -27,7 +41,6 @@ class AreaDataScraper:
         df = self.scraper.get_dataframe()
         numRows = len(df.index)
         print(" - Got {} rows of Data".format(numRows))
-        print("Converting:")
 
         print("Sending:")
         self._upload_blob_to_storage(df)
