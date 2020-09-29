@@ -15,9 +15,40 @@ API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid..
 - Make carbon intensity value data available in the form of an API, based on averaging historic data
 - Combine Weather Data and Historic Data with ML to make forecast about 'likely current intensity'
 - Allow historic query on predictions
-- Incorporate all regions in Japan
+- ~~Incorporate all regions in Japan~~ DONE!
 - Build Good Documentation for the API
 - Solve the 'Pumped Storage' Problem 👇
+
+### How to Contribute
+
+- Create an Issue to Explain your Problem, Feature or pick up an existing one, do leave a comment and feel free to ask questions 😁
+- Fork the Project
+- Clone Locally and Install Dependancies
+- Set up your Google Account and Run the API Locally
+- Make and commit your changes
+- Open a PR to the master branch of this repo with a detailed explanation of your work (inc. screenshots)
+- Guidelines in [CONTRIBUTING.md](CONTRIBUTING.md)
+
+
+### Local Setup
+This project is aimed at UNIX runtimes, if you are on Windows, consider using [WSL2](https://docs.microsoft.com/en-us/windows/wsl/compare-versions#whats-new-in-wsl-2) which works fine.
+
+**Python Bits**
+- Install Python3 to match the [current Google Cloud Functions Runtime](https://cloud.google.com/functions/docs/concepts/python-runtime)
+- Consider using a [virtual environment](https://docs.python.org/3/tutorial/venv.html)
+- Install Pip
+- Install project dependancies
+
+
+**Node Bits**
+- Install [Node](https://nodejs.org/en/) and ensure `npm` is installed
+- Run `cd cloud_functions/ && npm install` to install serverless and its dependancies
+
+**Runtime Bits**
+- Install the [Google Cloud SDK](https://cloud.google.com/sdk)
+- Setup your Google Account, following the [Serverless Google Cloud Functions Guide](https://www.serverless.com/framework/docs/providers/google/guide/credentials/)
+- Place your Google Account service key in the ROOT DIRECTORY OF YOUR TERMINAL RUNTIME `cd ~` named `gcloud-service-key.json` to match `serverless.yml`
+- Run `./local.sh api` to run the project locally
 
 ### Pumped Storage Problem
 
@@ -33,6 +64,7 @@ Data has been retrived from:
 - TEPCO: [Source Link](http://www.tepco.co.jp/forecast/html/area_data-j.html)
 - Tohokuden: [Source Link](https://setsuden.nw.tohoku-epco.co.jp/download.html)
 - KEPCO: [Source Link](https://www.kansai-td.co.jp/denkiyoho/area-performance.html)
+- And more...
 
 Example Graphs So Far:
 
@@ -53,7 +85,8 @@ gcloud functions logs read
 ./deployendpoint.sh daily_carbon_intensity
 
 # Run Locally
-./local.sh api main
+./local.sh api
+./local.sh scrapers
 
 # Deploy All
 ./deployAll.sh
