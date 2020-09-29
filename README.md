@@ -48,7 +48,8 @@ This project is aimed at UNIX runtimes, if you are on Windows, consider using [W
 - Install the [Google Cloud SDK](https://cloud.google.com/sdk)
 - Setup your Google Account, following the [Serverless Google Cloud Functions Guide](https://www.serverless.com/framework/docs/providers/google/guide/credentials/)
 - Place your Google Account service key in the ROOT DIRECTORY OF YOUR TERMINAL RUNTIME `cd ~` named `gcloud-service-key.json` to match `serverless.yml`
-- Run `./local.sh api` to run the project locally
+- Run `./local.sh api` to run the api function locally, and `./local.sh scrapers` to run the scraper function locally with hot-reload
+- Use cURL, Postman etc. and ping `http://localhost:8080/<etc>` to initiate the function
 
 ### Pumped Storage Problem
 
