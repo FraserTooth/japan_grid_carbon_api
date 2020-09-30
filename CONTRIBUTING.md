@@ -11,7 +11,9 @@ Please note we have a code of conduct, please follow it in all your interactions
 2. Please explain your pull request as best you can in the details section, with screenshots if possible.
 3. Comments are not required unless you have done something unusual or hacky.
 4. Please rebase out test commits for commit cleanliness.
-5. Edits to the calculations, constants, etc. behind the final Carbon Intensity values provided must be accompanied with well sourced, fully explained evidence.
+5. Tests are more-or-less mandatory, if you cannot provide test coverage please provide evidence as to why you cannot.
+6. Edits to the calculations, constants, etc. behind the final Carbon Intensity values
+provided must be accompanied with well sourced, fully explained evidence.
 
 ## Code of Conduct
 
