@@ -24,7 +24,7 @@ class OkidenAPI(UtilityAPI):
         FROM (
             SELECT *,
             (MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output) as MWh_total_generation
-            FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
         )
         """.format(
             utility=self.utility,

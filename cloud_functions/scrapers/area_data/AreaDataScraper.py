@@ -2,6 +2,7 @@ import json
 from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
+from pydoc import locate
 
 from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
@@ -71,6 +72,23 @@ class AreaDataScraper:
         table_id = BQ_DATASET + "." + BQ_TABLE
 
         df.to_gbq(table_id, if_exists="replace")
+
+    def _create_linear_regression_model(self):
+
+        # Dynamically Pull in the API code
+        #   this function runs once upon scraping
+        #   but all functional data - re: Carbon is in API
+        #   this should maybe be changed
+        utilityCaps = self.utility.title() + "API"
+        UtilityAPI = locate(
+            'api.utilities.{utility}.{utilityCaps}.{utilityCaps}'.format(
+                utility=self.utility,
+                utilityCaps=utilityCaps
+            )
+        )
+
+        api = UtilityAPI()
+        return api.create_linear_regression_model()
 
 
 class BigQueryError(Exception):

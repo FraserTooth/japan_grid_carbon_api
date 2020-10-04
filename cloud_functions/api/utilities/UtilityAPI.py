@@ -1,5 +1,8 @@
 import pandas as pd
 import requests
+import json
+from google.cloud import bigquery
+client = bigquery.Client()
 
 
 class UtilityAPI:
@@ -23,7 +26,7 @@ class UtilityAPI:
             (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors}) 
             ) / kWh_total
             ) as carbon_intensity
-        FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+        FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
         """.format(
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
@@ -218,7 +221,30 @@ class UtilityAPI:
 
         return output
 
+    def create_linear_regression_model(self):
+
+        query = """
+        CREATE OR REPLACE MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`
+        OPTIONS(
+        model_type='LINEAR_REG',
+        input_label_cols=['carbon_intensity']
+        ) AS""".format(utility=self.utility) + """
+        SELECT
+        EXTRACT(MONTH FROM datetime) AS month,
+        EXTRACT(YEAR FROM datetime) AS year,
+        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, month, dayofweek, hour
+        order by year, month, dayofweek, hour asc
+        """
+
+        queryJob = client.query(query)
+
+        return
+
     # Likely to be Overwritten
+
     def get_carbon_intensity_factors(self):
         # Get And Calculate Carbon Intensity
         print("Grabbing Intensities")

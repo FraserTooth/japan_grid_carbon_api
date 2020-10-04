@@ -29,7 +29,7 @@ class YondenAPI(UtilityAPI):
                 SELECT *,
                 if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
                 if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
-                FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+                FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
             )
         )
         """.format(
