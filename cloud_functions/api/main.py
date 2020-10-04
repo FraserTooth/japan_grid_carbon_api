@@ -114,6 +114,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     breakdowns = {
         "year": utilityClass.daily_intensity_by_year,
         "month": utilityClass.daily_intensity_by_month,
+        "month_and_year": utilityClass.daily_intensity_by_month_and_year,
         "month_and_weekday": utilityClass.daily_intensity_by_month_and_weekday
     }
     dataSource = breakdowns.get(breakdown, None)
