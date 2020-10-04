@@ -103,6 +103,21 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _extract_daily_carbon_intensity_by_month_and_year_from_big_query(self):
+
+        query = """
+        SELECT
+        EXTRACT(MONTH FROM datetime) AS month,
+        EXTRACT(YEAR FROM datetime) AS year,
+        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, month, dayofweek, hour
+        order by year, month, dayofweek, hour asc
+        """
+
+        return pd.read_gbq(query)
+
     def daily_intensity(self):
 
         df = self._extract_daily_carbon_intensity_from_big_query()
@@ -177,6 +192,26 @@ class UtilityAPI:
                 lambda month: month.groupby('dayofweek').apply(
                     lambda day: day[['hour', 'carbon_intensity']]
                     .to_dict(orient='records')
+                ).to_dict()
+            ).to_dict()
+        }
+
+        return output
+
+    def daily_intensity_by_year_month_and_weekday(self):
+
+        df = self._extract_daily_carbon_intensity_by_month_and_year_from_big_query()
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_year_month_and_weekday": df.groupby('year')
+            .apply(
+                lambda year: year.groupby('month').apply(
+                    lambda month: month.groupby('dayofweek').apply(
+                        lambda day: day[['hour', 'carbon_intensity']]
+                        .to_dict(orient='records')
+                    ).to_dict()
                 ).to_dict()
             ).to_dict()
         }
