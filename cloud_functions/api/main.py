@@ -112,6 +112,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
 
     # Check Breakdown Type
     breakdowns = {
+        "year": utilityClass.daily_intensity_by_year,
         "month": utilityClass.daily_intensity_by_month,
         "month_and_weekday": utilityClass.daily_intensity_by_month_and_weekday
     }

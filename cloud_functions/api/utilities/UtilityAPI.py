@@ -49,6 +49,19 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _extract_daily_carbon_intensity_by_year_from_big_query(self):
+
+        query = """
+        SELECT
+        EXTRACT(YEAR from datetime) as year,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, hour
+        order by year, hour asc
+        """
+
+        return pd.read_gbq(query)
+
     def _extract_daily_carbon_intensity_by_month_from_big_query(self):
 
         query = """
@@ -84,6 +97,22 @@ class UtilityAPI:
 
         output = {"carbon_intensity_by_hour": df[[
             'hour', 'carbon_intensity']].to_dict("records")
+        }
+
+        return output
+
+    def daily_intensity_by_year(self):
+
+        df = self._extract_daily_carbon_intensity_by_year_from_big_query()
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_year": df.groupby('year')
+            .apply(
+                lambda year: year[['hour', 'carbon_intensity']]
+                .to_dict(orient='records')
+            ).to_dict()
         }
 
         return output
