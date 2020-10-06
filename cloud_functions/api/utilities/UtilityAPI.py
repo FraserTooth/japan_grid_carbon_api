@@ -240,8 +240,9 @@ class UtilityAPI:
         """
 
         queryJob = client.query(query)
+        result = queryJob.result()
 
-        return
+        return "Success"
 
     # Likely to be Overwritten
 

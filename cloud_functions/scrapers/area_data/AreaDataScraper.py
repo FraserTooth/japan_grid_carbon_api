@@ -49,6 +49,10 @@ class AreaDataScraper:
 
         self._insert_into_bigquery(df)
         print(" - Sent to BigQuery")
+
+        print("Creating Regression Model")
+        self._create_linear_regression_model()
+        print(" - Regression Created")
         return numRows
 
     def _upload_blob_to_storage(self, df):
