@@ -153,10 +153,12 @@ def daily_carbon_intensity_prediction(utility, year):
     if int(year) < now.year or int(year) > (now.year + 50):
         return f'Invalid Year Specified - must be between this year and 50 from now', 400, headers
 
+    print("Fetching Prediction - " + utility +
+          " predicted intensity for " + str(year) + ":")
+
     # Check Cache
     if year in cache[utility]:
-        print("Returning cache. " + utility +
-              " predicted intensity for " + year + ":")
+        print("Returning cache...")
         return json.dumps(cache[utility][year]), 200, headers
 
     response['data'] = utilityClass.daily_intensity_prediction_for_year_by_month_and_weekday(

@@ -70,7 +70,7 @@ def test_gbq_query_string():
             (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * 500) 
             ) / kWh_total
             ) as carbon_intensity
-        FROM japan-grid-carbon-api.tepco.historical_data_by_generation_type
+        FROM `japan-grid-carbon-api.tepco.historical_data_by_generation_type`
         """
 
     assert expected == api._get_intensity_query_string()
