@@ -199,3 +199,59 @@ def test_daily_intensity_by_month_and_weekday(mocker):
     }
 
     assert expected == api.daily_intensity_by_month_and_weekday()
+
+
+def test_daily_intensity_prediction_for_year_by_month_and_weekday(mocker):
+    api = UtilityAPI('tepco')
+
+    def mock_daily_intensity_prediction_for_year_by_month_and_weekday(self):
+        d = {
+            'hour': [1, 2, 3, 4],
+            'predicted_carbon_intensity': [500, 550, 600, 650],
+            'year': [2030, 2030, 2030, 2030],
+            'month': [1, 1, 2, 2],
+            'dayofweek': [1, 2, 1, 2]
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        mock_daily_intensity_prediction_for_year_by_month_and_weekday
+    )
+
+    expected = {
+        "prediction_year": 2030,
+        "carbon_intensity_by_month_and_weekday": {
+            1: {
+                1: [
+                    {
+                        "hour": 1,
+                        "predicted_carbon_intensity": 500,
+                    }
+                ],
+                2: [
+                    {
+                        "hour": 2,
+                        "predicted_carbon_intensity": 550,
+                    }
+                ]
+            },
+            2: {
+                1: [
+                    {
+                        "hour": 3,
+                        "predicted_carbon_intensity": 600,
+                    }
+                ],
+                2: [
+                    {
+                        "hour": 4,
+                        "predicted_carbon_intensity": 650,
+                    }
+                ]
+            },
+        }
+    }
+
+    assert expected == api.daily_intensity_prediction_for_year_by_month_and_weekday(
+        2030)

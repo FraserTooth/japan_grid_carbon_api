@@ -253,6 +253,7 @@ class UtilityAPI:
         df.reset_index(inplace=True)
 
         output = {
+            "prediction_year": year,
             "carbon_intensity_by_month_and_weekday": df.groupby('month')
             .apply(
                 lambda month: month.groupby('dayofweek').apply(
