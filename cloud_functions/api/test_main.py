@@ -1,7 +1,10 @@
 import pytest
 import json
 import gc
-from .main import daily_carbon_intensity, daily_carbon_intensity_with_breakdown, clearCache
+from .main import (daily_carbon_intensity,
+                   daily_carbon_intensity_with_breakdown,
+                   daily_carbon_intensity_prediction,
+                   clearCache)
 
 
 # Before All
@@ -109,6 +112,68 @@ def test_daily_carbon_intensity_with_breakdown_cache(mocker):
         "tepco", "month")
     body2, code2, cors2 = daily_carbon_intensity_with_breakdown(
         "tepco", "month")
+
+    expectedData1 = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    expectedData2 = {
+        "data": "xyz",
+        "fromCache": True
+    }
+
+    assert body1 == json.dumps(expectedData1)
+    assert body2 == json.dumps(expectedData2)
+
+
+# Daily Carbon Intensity Predictions
+
+
+def test_daily_carbon_intensity_predictions_bad_utility():
+    message, code, cors = daily_carbon_intensity_prediction(
+        "fish", 2030)
+    assert message == 'Invalid Utility Specified'
+    assert code == 400
+
+
+def test_daily_carbon_intensity_predictions_bad_year():
+    message, code, cors = daily_carbon_intensity_prediction(
+        "tepco", 2000)
+    assert message == 'Invalid Year Specified - must be between this year and 50 from now'
+    assert code == 400
+
+
+def test_daily_carbon_intensity_predictions_response(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_prediction_for_year_by_month_and_weekday',
+        return_value='xyz'
+    )
+
+    body, code, cors = daily_carbon_intensity_prediction(
+        "tepco", 2030)
+
+    expectedData = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    assert body == json.dumps(expectedData)
+    assert code == 200
+
+
+def test_daily_carbon_intensity_predictions_cache(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.daily_intensity_prediction_for_year_by_month_and_weekday',
+        return_value='xyz'
+    )
+
+    body1, code1, cors1 = daily_carbon_intensity_prediction(
+        "tepco", 2030)
+    body2, code2, cors2 = daily_carbon_intensity_prediction(
+        "tepco", 2030)
 
     expectedData1 = {
         "data": "xyz",

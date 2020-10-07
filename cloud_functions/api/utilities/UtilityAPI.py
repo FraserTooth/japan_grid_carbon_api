@@ -1,5 +1,7 @@
 import pandas as pd
 import requests
+import json
+from google.cloud import bigquery
 
 
 class UtilityAPI:
@@ -23,7 +25,7 @@ class UtilityAPI:
             (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors}) 
             ) / kWh_total
             ) as carbon_intensity
-        FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+        FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
         """.format(
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
@@ -49,6 +51,19 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _extract_daily_carbon_intensity_by_year_from_big_query(self):
+
+        query = """
+        SELECT
+        EXTRACT(YEAR from datetime) as year,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, hour
+        order by year, hour asc
+        """
+
+        return pd.read_gbq(query)
+
     def _extract_daily_carbon_intensity_by_month_from_big_query(self):
 
         query = """
@@ -58,6 +73,20 @@ class UtilityAPI:
         """ + self._get_intensity_query_string() + """
         GROUP BY month, hour
         order by month, hour asc
+        """
+
+        return pd.read_gbq(query)
+
+    def _extract_daily_carbon_intensity_by_month_and_year_from_big_query(self):
+
+        query = """
+        SELECT
+        EXTRACT(MONTH FROM datetime) AS month,
+        EXTRACT(YEAR FROM datetime) AS year,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, month, hour
+        order by year, month, hour asc
         """
 
         return pd.read_gbq(query)
@@ -76,6 +105,46 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _extract_daily_carbon_intensity_by_month_and_year_from_big_query(self):
+
+        query = """
+        SELECT
+        EXTRACT(MONTH FROM datetime) AS month,
+        EXTRACT(YEAR FROM datetime) AS year,
+        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, month, dayofweek, hour
+        order by year, month, dayofweek, hour asc
+        """
+
+        return pd.read_gbq(query)
+
+    def _extract_prediction_from_big_query_by_weekday_month_and_year(self, year):
+
+        query = """
+        SELECT
+        predicted_carbon_intensity, year, dayofweek, month, hour
+        FROM
+        ML.PREDICT(MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`,
+            (
+            SELECT
+                {year} AS year,
+                EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+                EXTRACT(MONTH FROM datetime) AS month,
+                EXTRACT(HOUR FROM datetime) AS hour,
+            FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            GROUP BY month, dayofweek, hour
+            )
+        )
+        order by month, dayofweek, hour asc
+        """.format(
+                utility=self.utility,
+                year=year
+        )
+
+        return pd.read_gbq(query)
+
     def daily_intensity(self):
 
         df = self._extract_daily_carbon_intensity_from_big_query()
@@ -84,6 +153,22 @@ class UtilityAPI:
 
         output = {"carbon_intensity_by_hour": df[[
             'hour', 'carbon_intensity']].to_dict("records")
+        }
+
+        return output
+
+    def daily_intensity_by_year(self):
+
+        df = self._extract_daily_carbon_intensity_by_year_from_big_query()
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_year": df.groupby('year')
+            .apply(
+                lambda year: year[['hour', 'carbon_intensity']]
+                .to_dict(orient='records')
+            ).to_dict()
         }
 
         return output
@@ -99,6 +184,24 @@ class UtilityAPI:
             .apply(
                 lambda month: month[['hour', 'carbon_intensity']]
                 .to_dict(orient='records')
+            ).to_dict()
+        }
+
+        return output
+
+    def daily_intensity_by_month_and_year(self):
+
+        df = self._extract_daily_carbon_intensity_by_month_and_year_from_big_query()
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_month_and_year": df.groupby('year')
+            .apply(
+                lambda year: year.groupby('month').apply(
+                    lambda month: month[['hour', 'carbon_intensity']]
+                    .to_dict(orient='records')
+                ).to_dict()
             ).to_dict()
         }
 
@@ -122,7 +225,71 @@ class UtilityAPI:
 
         return output
 
+    def daily_intensity_by_year_month_and_weekday(self):
+
+        df = self._extract_daily_carbon_intensity_by_month_and_year_from_big_query()
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_year_month_and_weekday": df.groupby('year')
+            .apply(
+                lambda year: year.groupby('month').apply(
+                    lambda month: month.groupby('dayofweek').apply(
+                        lambda day: day[['hour', 'carbon_intensity']]
+                        .to_dict(orient='records')
+                    ).to_dict()
+                ).to_dict()
+            ).to_dict()
+        }
+
+        return output
+
+    def daily_intensity_prediction_for_year_by_month_and_weekday(self, year):
+        df = self._extract_prediction_from_big_query_by_weekday_month_and_year(
+            year)
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "prediction_year": year,
+            "carbon_intensity_by_month_and_weekday": df.groupby('month')
+            .apply(
+                lambda month: month.groupby('dayofweek').apply(
+                    lambda day: day[['hour', 'predicted_carbon_intensity']]
+                    .to_dict(orient='records')
+                ).to_dict()
+            ).to_dict()
+        }
+
+        return output
+
+    def create_linear_regression_model(self):
+        client = bigquery.Client()
+
+        query = """
+        CREATE OR REPLACE MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`
+        OPTIONS(
+        model_type='LINEAR_REG',
+        input_label_cols=['carbon_intensity']
+        ) AS""".format(utility=self.utility) + """
+        SELECT
+        EXTRACT(MONTH FROM datetime) AS month,
+        EXTRACT(YEAR FROM datetime) AS year,
+        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+        EXTRACT(HOUR FROM datetime) AS hour,
+        """ + self._get_intensity_query_string() + """
+        GROUP BY year, month, dayofweek, hour
+        order by year, month, dayofweek, hour asc
+        """
+
+        queryJob = client.query(query)
+        result = queryJob.result()
+
+        return "Success"
+
     # Likely to be Overwritten
+
     def get_carbon_intensity_factors(self):
         # Get And Calculate Carbon Intensity
         print("Grabbing Intensities")
