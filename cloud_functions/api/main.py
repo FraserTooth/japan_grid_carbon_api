@@ -129,7 +129,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
               " daily_intensity_by_" + breakdown + ":")
         return json.dumps(cache[utility][breakdown]), 200, headers
 
-    response['data'] = dataSource(2021)
+    response['data'] = dataSource()
     response['fromCache'] = True
 
     # Populate Cache
