@@ -139,7 +139,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     return json.dumps(response), 200, headers
 
 
-@app.route('/daily_carbon_intensity/<utility>/prediction/<year>')
+@app.route('/v0.1/daily_carbon_intensity/<utility>/prediction/<year>')
 def daily_carbon_intensity_prediction(utility, year):
     response = {}
 
