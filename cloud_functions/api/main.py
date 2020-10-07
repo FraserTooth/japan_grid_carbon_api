@@ -78,7 +78,7 @@ def api(request):
             return app.process_response(response)
 
 
-@app.route('/daily_carbon_intensity/<utility>')
+@app.route('/v0.1/daily_carbon_intensity/<utility>')
 def daily_carbon_intensity(utility):
     response = {}
 
@@ -102,7 +102,7 @@ def daily_carbon_intensity(utility):
     return json.dumps(response), 200, headers
 
 
-@app.route('/daily_carbon_intensity/<utility>/<breakdown>')
+@app.route('/v0.1/daily_carbon_intensity/<utility>/<breakdown>')
 def daily_carbon_intensity_with_breakdown(utility, breakdown):
     response = {}
 
