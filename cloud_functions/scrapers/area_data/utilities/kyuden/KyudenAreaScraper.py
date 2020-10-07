@@ -8,6 +8,9 @@ import datetime
 class KyudenAreaScraper:
 
     def _parseCsvs(self):
+        # Main Page
+        # https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure
+
         # CSVs change format halfway thru
         # https://www.kyuden.co.jp/var/rev0/0254/3833/area_jyukyu_jisseki_H28_1Q.csv
         #  to
@@ -17,11 +20,11 @@ class KyudenAreaScraper:
 
         CSV_URLS = []
 
-        fileNumStart = 3833
+        fileNumStart = 4370
 
         for year in range(28, 31):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0254/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/0257/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
                     quarter=quarter
@@ -30,7 +33,7 @@ class KyudenAreaScraper:
 
         for year in range(2019, 2021):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0254/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/0257/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
                     quarter=quarter
@@ -39,7 +42,7 @@ class KyudenAreaScraper:
 
         # TODO - See how it changes next month
         CSV_URLS.append(
-            "https://www.kyuden.co.jp/var/rev0/0254/3850/area_jyukyu_jisseki_2020_07.csv",
+            "https://www.kyuden.co.jp/var/rev0/0257/4387/area_jyukyu_jisseki_2020_07_08.csv",
         )
 
         dtypes = {
