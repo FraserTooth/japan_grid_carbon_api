@@ -121,6 +121,31 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _extract_prediction_from_big_query_by_weekday_month_and_year(self, year):
+
+        query = """
+        SELECT
+        predicted_carbon_intensity, year, dayofweek, month, hour
+        FROM
+        ML.PREDICT(MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`,
+            (
+            SELECT
+                {year} AS year,
+                EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
+                EXTRACT(MONTH FROM datetime) AS month,
+                EXTRACT(HOUR FROM datetime) AS hour,
+            FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            GROUP BY month, dayofweek, hour
+            )
+        )
+        order by month, dayofweek, hour asc
+        """.format(
+                utility=self.utility,
+                year=year
+        )
+
+        return pd.read_gbq(query)
+
     def daily_intensity(self):
 
         df = self._extract_daily_carbon_intensity_from_big_query()
@@ -215,6 +240,24 @@ class UtilityAPI:
                         lambda day: day[['hour', 'carbon_intensity']]
                         .to_dict(orient='records')
                     ).to_dict()
+                ).to_dict()
+            ).to_dict()
+        }
+
+        return output
+
+    def daily_intensity_prediction_for_year_by_month_and_weekday(self, year):
+        df = self._extract_prediction_from_big_query_by_weekday_month_and_year(
+            year)
+
+        df.reset_index(inplace=True)
+
+        output = {
+            "carbon_intensity_by_month_and_weekday": df.groupby('month')
+            .apply(
+                lambda month: month.groupby('dayofweek').apply(
+                    lambda day: day[['hour', 'predicted_carbon_intensity']]
+                    .to_dict(orient='records')
                 ).to_dict()
             ).to_dict()
         }

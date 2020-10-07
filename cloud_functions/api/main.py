@@ -2,6 +2,8 @@ import json
 import copy
 import werkzeug.datastructures
 from flask import Flask
+import datetime
+now = datetime.datetime.now()
 app = Flask(__name__)
 
 from pprint import pprint
@@ -87,7 +89,7 @@ def daily_carbon_intensity(utility):
 
     # Check Cache
     if "daily_intensity" in cache[utility]:
-        print("Returning cache." + utility + "daily_intensity:")
+        print("Returning cache. " + utility + " daily_intensity:")
         return json.dumps(cache[utility]["daily_intensity"]), 200, headers
 
     response['data'] = utilityClass.daily_intensity()
@@ -115,8 +117,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
         "year": utilityClass.daily_intensity_by_year,
         "month": utilityClass.daily_intensity_by_month,
         "month_and_year": utilityClass.daily_intensity_by_month_and_year,
-        "month_and_weekday": utilityClass.daily_intensity_by_month_and_weekday,
-        "year_month_and_weekday": utilityClass.daily_intensity_by_year_month_and_weekday
+        "month_and_weekday": utilityClass.daily_intensity_by_month_and_weekday
     }
     dataSource = breakdowns.get(breakdown, None)
     if dataSource == None:
@@ -124,15 +125,46 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
 
     # Check Cache
     if breakdown in cache[utility]:
-        print("Returning cache." + utility +
-              "daily_intensity_by_" + breakdown + ":")
+        print("Returning cache. " + utility +
+              " daily_intensity_by_" + breakdown + ":")
         return json.dumps(cache[utility][breakdown]), 200, headers
 
-    response['data'] = dataSource()
+    response['data'] = dataSource(2021)
     response['fromCache'] = True
 
     # Populate Cache
     cache[utility][breakdown] = copy.deepcopy(response)
+    response["fromCache"] = False
+
+    return json.dumps(response), 200, headers
+
+
+@app.route('/daily_carbon_intensity/<utility>/prediction/<year>')
+def daily_carbon_intensity_prediction(utility, year):
+    response = {}
+
+    utilityClass = selectUtility(utility)
+
+    # Sense Check Utiltity
+    if utilityClass == None:
+        return BAD_UTILITY, 400, headers
+
+    # Check Breakdown Type
+    if int(year) < now.year or int(year) > (now.year + 50):
+        return f'Invalid Year Specified - must be between this year and 50 from now', 400, headers
+
+    # Check Cache
+    if year in cache[utility]:
+        print("Returning cache. " + utility +
+              " predicted intensity for " + year + ":")
+        return json.dumps(cache[utility][year]), 200, headers
+
+    response['data'] = utilityClass.daily_intensity_prediction_for_year_by_month_and_weekday(
+        year)
+    response['fromCache'] = True
+
+    # Populate Cache
+    cache[utility][year] = copy.deepcopy(response)
     response["fromCache"] = False
 
     return json.dumps(response), 200, headers
