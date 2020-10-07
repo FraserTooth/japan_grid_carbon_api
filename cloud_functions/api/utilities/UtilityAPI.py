@@ -2,7 +2,6 @@ import pandas as pd
 import requests
 import json
 from google.cloud import bigquery
-client = bigquery.Client()
 
 
 class UtilityAPI:
@@ -266,6 +265,7 @@ class UtilityAPI:
         return output
 
     def create_linear_regression_model(self):
+        client = bigquery.Client()
 
         query = """
         CREATE OR REPLACE MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`
