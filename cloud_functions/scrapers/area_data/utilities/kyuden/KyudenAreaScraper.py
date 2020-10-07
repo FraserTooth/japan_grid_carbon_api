@@ -8,6 +8,9 @@ import datetime
 class KyudenAreaScraper:
 
     def _parseCsvs(self):
+        # Main Page
+        # https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure
+
         # CSVs change format halfway thru
         # https://www.kyuden.co.jp/var/rev0/0254/3833/area_jyukyu_jisseki_H28_1Q.csv
         #  to
@@ -17,29 +20,33 @@ class KyudenAreaScraper:
 
         CSV_URLS = []
 
-        fileNumStart = 3833
+        groupNum = "0257"  # Changes every month
+        fileNumStart = 4370  # Changes every month
+        # TODO: Move to a HTML parsing version to get the new endpoints each month
 
         for year in range(28, 31):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0254/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
-                    quarter=quarter
+                    quarter=quarter,
+                    groupNum=groupNum
                 )
                 CSV_URLS.append(url)
 
         for year in range(2019, 2021):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0254/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
-                    quarter=quarter
+                    quarter=quarter,
+                    groupNum=groupNum
                 )
                 CSV_URLS.append(url)
 
         # TODO - See how it changes next month
         CSV_URLS.append(
-            "https://www.kyuden.co.jp/var/rev0/0254/3850/area_jyukyu_jisseki_2020_07.csv",
+            "https://www.kyuden.co.jp/var/rev0/0257/4387/area_jyukyu_jisseki_2020_07_08.csv",
         )
 
         dtypes = {
