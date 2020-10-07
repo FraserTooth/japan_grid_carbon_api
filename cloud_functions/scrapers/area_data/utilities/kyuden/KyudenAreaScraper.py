@@ -20,23 +20,27 @@ class KyudenAreaScraper:
 
         CSV_URLS = []
 
-        fileNumStart = 4370
+        groupNum = "0257"  # Changes every month
+        fileNumStart = 4370  # Changes every month
+        # TODO: Move to a HTML parsing version to get the new endpoints each month
 
         for year in range(28, 31):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0257/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
-                    quarter=quarter
+                    quarter=quarter,
+                    groupNum=groupNum
                 )
                 CSV_URLS.append(url)
 
         for year in range(2019, 2021):
             for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/0257/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
+                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
                     fileNum=fileNumStart + len(CSV_URLS),
                     year=year,
-                    quarter=quarter
+                    quarter=quarter,
+                    groupNum=groupNum
                 )
                 CSV_URLS.append(url)
 
