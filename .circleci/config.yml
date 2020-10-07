@@ -15,6 +15,10 @@ jobs:
           command: pip install -r requirements.txt
 
       - run:
+          name: Setup Google Credentials for test
+          command: export GOOGLE_APPLICATION_CREDENTIALS="~/gcloud-service-key.json"
+
+      - run:
           name: test
           command: pytest
 
