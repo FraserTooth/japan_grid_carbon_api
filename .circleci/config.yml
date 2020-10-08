@@ -26,12 +26,12 @@ jobs:
       - gcp-cli/install
 
       - run:
-        name: Initialize gcloud CLI to connect to Google Cloud
-        command: |
-          echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
-          gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
-          gcloud --quiet config set project $GOOGLE_PROJECT_ID
-          gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
+          name: Initialize gcloud CLI to connect to Google Cloud
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
+            gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
+            gcloud --quiet config set project $GOOGLE_PROJECT_ID
+            gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
 
       # Download and cache dependencies
       - restore_cache:
@@ -67,12 +67,12 @@ jobs:
       - gcp-cli/install
 
       - run:
-        name: Initialize gcloud CLI to connect to Google Cloud
-        command: |
-          echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
-          gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
-          gcloud --quiet config set project $GOOGLE_PROJECT_ID
-          gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
+          name: Initialize gcloud CLI to connect to Google Cloud
+          command: |
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
+            gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
+            gcloud --quiet config set project $GOOGLE_PROJECT_ID
+            gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
 
       # Download and cache dependencies
       - restore_cache:
