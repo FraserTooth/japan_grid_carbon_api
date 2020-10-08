@@ -28,6 +28,8 @@ jobs:
       - run:
           name: Initialize gcloud CLI to connect to Google Cloud
           command: |
+            cd ${HOME}
+            mkdir .gcloud 
             echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
             gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
             gcloud --quiet config set project $GOOGLE_PROJECT_ID
@@ -69,6 +71,8 @@ jobs:
       - run:
           name: Initialize gcloud CLI to connect to Google Cloud
           command: |
+            cd ${HOME}
+            mkdir .gcloud 
             echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
             gcloud auth activate-service-account --key-file=${HOME}/japan-grid-carbon-service-key-staging.json
             gcloud --quiet config set project $GOOGLE_PROJECT_ID
