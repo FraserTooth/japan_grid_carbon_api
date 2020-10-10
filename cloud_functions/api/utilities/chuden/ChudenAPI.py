@@ -33,7 +33,7 @@ class ChudenAPI(UtilityAPI):
             )
         )
         """.format(
-            bqStageName=self.utility,
+            bqStageName=self.bqStageName,
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
