@@ -1,8 +1,12 @@
 import json
+import os
+from datetime import datetime
 from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 from pydoc import locate
+
+stage = os.environ['STAGE']
 
 from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
 from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
@@ -57,9 +61,12 @@ class AreaDataScraper:
 
     def _upload_blob_to_storage(self, df):
         CS = storage.Client()
-        BUCKET_NAME = 'scraper_data'
-        BLOB_NAME = '{utility}_historical_data.csv'.format(
-            utility=self.utility)
+        dateString = datetime.today().strftime('%Y-%m-%d')
+        BUCKET_NAME = 'scraper_data_' + stage
+        BLOB_NAME = '{utility}_historical_data_{date}.csv'.format(
+            utility=self.utility,
+            date=dateString
+        )
 
         """Uploads a file to the bucket."""
         bucket = CS.get_bucket(BUCKET_NAME)
