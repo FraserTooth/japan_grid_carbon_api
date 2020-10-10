@@ -6,6 +6,8 @@ provider:
   runtime: python37
   region: us-central1
   project: ${opt:id, 'japan-grid-carbon-api'}
+  environment:
+    STAGE: ${opt:stage, self:provider.stage, 'production'}
   # The GCF credentials can be a little tricky to set up. Luckily we've documented this for you here:
   # https://serverless.com/framework/docs/providers/google/guide/credentials/
   #
