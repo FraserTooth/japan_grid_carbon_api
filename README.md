@@ -47,8 +47,8 @@ This project is aimed at UNIX runtimes, if you are on Windows, consider using [W
 **Runtime Bits**
 - Install the [Google Cloud SDK](https://cloud.google.com/sdk)
 - Setup your Google Account, following the [Serverless Google Cloud Functions Guide](https://www.serverless.com/framework/docs/providers/google/guide/credentials/)
-- Place your Google Account service key in the ROOT DIRECTORY OF YOUR TERMINAL RUNTIME `cd ~` named `gcloud-service-key.json` to match `serverless.yml`
-- Run `./local.sh api` to run the api function locally, and `./local.sh scrapers` to run the scraper function locally with hot-reload
+- Place your Google Account service key in the ROOT DIRECTORY OF YOUR TERMINAL RUNTIME `cd ~` named `./.gcloud/japan-grid-carbon-service-key-<environment>.json` to match `serverless.yml`
+- Run `./local.sh api staging` to run the api function locally, and `./local.sh scrapers staging` to run the scraper function locally with hot-reload in staging
 - Use cURL, Postman etc. and ping `http://localhost:8080/<etc>` to initiate the function
 
 ### Pumped Storage Problem
@@ -82,15 +82,16 @@ source .venv/bin/activate
 # Read the Recent Logs
 gcloud functions logs read
 
-# Deploy Endpoint
-./deployendpoint.sh daily_carbon_intensity
+# Deploy Manually
+#   First argument, environment
+#   Second argument, project ID in google cloud
+./deploy.sh staging japan-grid-carbon-api
 
 # Run Locally
-./local.sh api
-./local.sh scrapers
-
-# Deploy All
-./deployAll.sh
+#   First argument, api name
+#   Second argument, environment
+./local.sh api scraping
+./local.sh scrapers production
 
 # Run Tests
 pytest -vv

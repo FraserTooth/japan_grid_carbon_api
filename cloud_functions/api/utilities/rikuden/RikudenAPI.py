@@ -29,10 +29,11 @@ class RikudenAPI(UtilityAPI):
                 SELECT *,
                 if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,
                 if(MWh_pumped_storage > 0,MWh_pumped_storage, 0) as MWh_pumped_storage_contribution,
-                FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
+                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
             )
         )
         """.format(
+            bqStageName=self.bqStageName,
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
