@@ -2,11 +2,14 @@ import pandas as pd
 import requests
 import json
 from google.cloud import bigquery
+import os
+stage = os.environ['STAGE']
 
 
 class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
+        self.bqStageName = "" if stage == "production" else "-staging"
 
     # Likely to be Overwritten
     def _get_intensity_query_string(self):
@@ -25,8 +28,9 @@ class UtilityAPI:
             (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors}) 
             ) / kWh_total
             ) as carbon_intensity
-        FROM `japan-grid-carbon-api.{utility}.historical_data_by_generation_type`
+        FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
         """.format(
+            bqStageName=self.bqStageName,
             utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
@@ -126,19 +130,20 @@ class UtilityAPI:
         SELECT
         predicted_carbon_intensity, year, dayofweek, month, hour
         FROM
-        ML.PREDICT(MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`,
+        ML.PREDICT(MODEL `japan-grid-carbon-api{bqStageName}.{utility}.year_month_dayofweek_model`,
             (
             SELECT
                 {year} AS year,
                 EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
                 EXTRACT(MONTH FROM datetime) AS month,
                 EXTRACT(HOUR FROM datetime) AS hour,
-            FROM japan-grid-carbon-api.{utility}.historical_data_by_generation_type
+            FROM japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type
             GROUP BY month, dayofweek, hour
             )
         )
         order by month, dayofweek, hour asc
         """.format(
+                bqStageName=self.bqStageName,
                 utility=self.utility,
                 year=year
         )
@@ -268,11 +273,14 @@ class UtilityAPI:
         client = bigquery.Client()
 
         query = """
-        CREATE OR REPLACE MODEL `japan-grid-carbon-api.{utility}.year_month_dayofweek_model`
+        CREATE OR REPLACE MODEL `japan-grid-carbon-api{bqStageName}.{utility}.year_month_dayofweek_model`
         OPTIONS(
         model_type='LINEAR_REG',
         input_label_cols=['carbon_intensity']
-        ) AS""".format(utility=self.utility) + """
+        ) AS""".format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        ) + """
         SELECT
         EXTRACT(MONTH FROM datetime) AS month,
         EXTRACT(YEAR FROM datetime) AS year,

@@ -1,6 +1,9 @@
 import pytest
 import json
 import gc
+import os
+os.environ["STAGE"] = "staging"
+
 from .main import (daily_carbon_intensity,
                    daily_carbon_intensity_with_breakdown,
                    daily_carbon_intensity_prediction,
