@@ -13,7 +13,7 @@ class UtilityAPI:
 
     # Likely to be Overwritten
     def _get_intensity_query_string(self):
-        return """
+        query_string = """
         AVG(
             {intensity_calc}
         ) as carbon_intensity
@@ -24,6 +24,7 @@ class UtilityAPI:
             from_string=self._pumped_storage_calc_query_string(),
             intensity_calc=self._carbon_intensity_query_string()
         )
+        return query_string
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -375,8 +376,6 @@ class UtilityAPI:
         json = response.json()
         factors = json["data"][0]
 
-        print("Resolving Intensities for " + self.utility)
-
         return {
             "kWh_nuclear": factors["Nuclear"],
             "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
@@ -385,7 +384,8 @@ class UtilityAPI:
             "kWh_biomass": factors["Biomass"],
             "kWh_solar_output": factors["Solar"],
             "kWh_wind_output": factors["Wind"],
-            "kWh_pumped_storage": factors["Pumped Storage"],
+            # Not always charged when renewables available, average of this
+            "kWh_pumped_storage": 80.07,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }
