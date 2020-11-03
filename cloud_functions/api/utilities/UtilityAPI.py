@@ -17,15 +17,15 @@ class UtilityAPI:
 
         return """
         AVG((
-            (kWh_nuclear * {intensity_nuclear}) + 
-            (kWh_fossil * {intensity_fossil}) + 
-            (kWh_hydro * {intensity_hydro}) + 
-            (kWh_geothermal * {intensity_geothermal}) + 
+            (kWh_nuclear * {intensity_nuclear}) +
+            (kWh_fossil * {intensity_fossil}) +
+            (kWh_hydro * {intensity_hydro}) +
+            (kWh_geothermal * {intensity_geothermal}) +
             (kWh_biomass * {intensity_biomass}) +
             (kWh_solar_output * {intensity_solar_output}) +
             (kWh_wind_output * {intensity_wind_output}) +
             (kWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors}) 
+            (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors})
             ) / kWh_total
             ) as carbon_intensity
         FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
@@ -269,27 +269,51 @@ class UtilityAPI:
 
         return output
 
-    def create_linear_regression_model(self):
+    def query_timeseries_model(self):
+        query = """
+        SELECT
+        *
+        FROM
+        ML.FORECAST(
+            MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`,
+            STRUCT(2232 AS horizon)
+        )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility,
+        )
+
+        return pd.read_gbq(query)
+
+    def create_timeseries_model(self):
         client = bigquery.Client()
 
         query = """
-        CREATE OR REPLACE MODEL `japan-grid-carbon-api{bqStageName}.{utility}.year_month_dayofweek_model`
+        CREATE OR REPLACE MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`
         OPTIONS(
-        model_type='LINEAR_REG',
-        input_label_cols=['carbon_intensity']
-        ) AS""".format(
+        MODEL_TYPE='ARIMA',
+        TIME_SERIES_TIMESTAMP_COL="datetime",
+        TIME_SERIES_DATA_COL ="carbon_intensity",
+        AUTO_ARIMA= TRUE,
+        DATA_FREQUENCY ='HOURLY',
+        HOLIDAY_REGION = 'JP',
+        HORIZON = 2232
+        ) AS
+            SELECT
+            datetime,
+                {intensity_calc}
+                as carbon_intensity
+            FROM (
+                {from_string}
+            )
+        order by datetime
+        """.format(
             bqStageName=self.bqStageName,
-            utility=self.utility
-        ) + """
-        SELECT
-        EXTRACT(MONTH FROM datetime) AS month,
-        EXTRACT(YEAR FROM datetime) AS year,
-        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
-        EXTRACT(HOUR FROM datetime) AS hour,
-        """ + self._get_intensity_query_string() + """
-        GROUP BY year, month, dayofweek, hour
-        order by year, month, dayofweek, hour asc
-        """
+            utility=self.utility,
+            from_string=self._pumped_storage_calc_query_string(),
+            intensity_calc=self._carbon_intensity_query_string()
+        )
+        print("Creating ARIMA Timeseries model for " + self.utility)
 
         queryJob = client.query(query)
         result = queryJob.result()
