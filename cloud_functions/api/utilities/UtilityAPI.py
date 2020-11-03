@@ -13,25 +13,49 @@ class UtilityAPI:
 
     # Likely to be Overwritten
     def _get_intensity_query_string(self):
+        return """
+        AVG(
+            {intensity_calc}
+        ) as carbon_intensity
+        FROM (
+            {from_string}
+        )
+        """.format(
+            from_string=self._pumped_storage_calc_query_string(),
+            intensity_calc=self._carbon_intensity_query_string()
+        )
+
+    def _pumped_storage_calc_query_string(self):
+        return """
+            SELECT *,
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
+            FROM (
+                SELECT *,
+                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
+                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
+                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+            )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+    def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
-        AVG((
-            (kWh_nuclear * {intensity_nuclear}) +
-            (kWh_fossil * {intensity_fossil}) +
-            (kWh_hydro * {intensity_hydro}) +
-            (kWh_geothermal * {intensity_geothermal}) +
-            (kWh_biomass * {intensity_biomass}) +
-            (kWh_solar_output * {intensity_solar_output}) +
-            (kWh_wind_output * {intensity_wind_output}) +
-            (kWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors})
-            ) / kWh_total
-            ) as carbon_intensity
-        FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+        (
+            (daMWh_nuclear * {intensity_nuclear}) +
+            (daMWh_fossil * {intensity_fossil}) +
+            (daMWh_hydro * {intensity_hydro}) +
+            (daMWh_geothermal * {intensity_geothermal}) +
+            (daMWh_biomass * {intensity_biomass}) +
+            (daMWh_solar_output * {intensity_solar_output}) +
+            (daMWh_wind_output * {intensity_wind_output}) +
+            (daMWh_pumped_storage_contribution * {intensity_pumped_storage}) +
+            (daMWh_interconnector_contribution * {intensity_interconnectors})
+        ) / daMWh_total_generation
         """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
             intensity_hydro=ci["kWh_hydro"],

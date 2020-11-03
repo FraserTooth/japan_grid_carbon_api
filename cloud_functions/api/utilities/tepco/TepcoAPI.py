@@ -6,19 +6,6 @@ class TepcoAPI(UtilityAPI):
     def __init__(self):
         super().__init__("tepco")
 
-    def _get_intensity_query_string(self):
-        return """
-        AVG(
-            {intensity_calc}
-        ) as carbon_intensity
-        FROM (
-            {from_string}
-        )
-        """.format(
-            from_string=self._pumped_storage_calc_query_string(),
-            intensity_calc=self._carbon_intensity_query_string()
-        )
-
     def _pumped_storage_calc_query_string(self):
         return """
             SELECT *,

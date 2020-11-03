@@ -6,11 +6,26 @@ class ChudenAPI(UtilityAPI):
     def __init__(self):
         super().__init__("chuden")
 
-    def _get_intensity_query_string(self):
+    def _pumped_storage_calc_query_string(self):
+        return """
+            SELECT *,
+            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_pumped_storage_contribution + MWh_interconnector_contribution) as MWh_total_generation
+            FROM (
+                SELECT *,
+                if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,
+                if(MWh_pumped_storage > 0,MWh_pumped_storage, 0) as MWh_pumped_storage_contribution,
+                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+            )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+    def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
-        AVG((
+        (
             (MWh_nuclear * {intensity_nuclear}) + 
             (MWh_fossil * {intensity_fossil}) + 
             (MWh_hydro * {intensity_hydro}) + 
@@ -20,21 +35,8 @@ class ChudenAPI(UtilityAPI):
             (MWh_wind_output * {intensity_wind_output}) +
             (MWh_pumped_storage_contribution * {intensity_pumped_storage}) +
             (MWh_interconnector_contribution * {intensity_interconnectors}) 
-            ) / (MWh_total_generation)
-            ) as carbon_intensity
-        FROM (
-            SELECT *,
-            (MWh_nuclear + MWh_fossil + MWh_hydro + MWh_geothermal + MWh_biomass + MWh_solar_output + MWh_wind_output + MWh_pumped_storage_contribution + MWh_interconnector_contribution) as MWh_total_generation
-            FROM (
-                SELECT *,
-                if(MWh_interconnectors > 0,MWh_interconnectors, 0) as MWh_interconnector_contribution,
-                if(MWh_pumped_storage > 0,MWh_pumped_storage, 0) as MWh_pumped_storage_contribution,
-                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
-            )
-        )
+        ) / (MWh_total_generation)
         """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
             intensity_hydro=ci["kWh_hydro"],
