@@ -5,6 +5,9 @@ from google.cloud import bigquery
 import os
 stage = os.environ['STAGE']
 
+HORIZON = 2500
+# Bit more than than 3 months of hours (24h * 31d * 3m = 2322)
+
 
 class UtilityAPI:
     def __init__(self, utility):
@@ -182,11 +185,12 @@ class UtilityAPI:
         FROM
         ML.FORECAST(
             MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`,
-            STRUCT(2232 AS horizon)
+            STRUCT({horizon_size} AS horizon)
         )
         """.format(
             bqStageName=self.bqStageName,
             utility=self.utility,
+            horizon_size=HORIZON
         )
 
         return pd.read_gbq(query)
@@ -333,7 +337,7 @@ class UtilityAPI:
         AUTO_ARIMA= TRUE,
         DATA_FREQUENCY ='HOURLY',
         HOLIDAY_REGION = 'JP',
-        HORIZON = 2500
+        HORIZON = {horizon_size}
         ) AS
             SELECT
             datetime,
@@ -347,7 +351,8 @@ class UtilityAPI:
             bqStageName=self.bqStageName,
             utility=self.utility,
             from_string=self._pumped_storage_calc_query_string(),
-            intensity_calc=self._carbon_intensity_query_string()
+            intensity_calc=self._carbon_intensity_query_string(),
+            horizon_size=HORIZON
         )
         print("Creating ARIMA Timeseries model for " + self.utility)
 
