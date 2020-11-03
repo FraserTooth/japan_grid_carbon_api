@@ -174,6 +174,22 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _query_timeseries_model(self):
+        query = """
+        SELECT
+        *
+        FROM
+        ML.FORECAST(
+            MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`,
+            STRUCT(2232 AS horizon)
+        )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility,
+        )
+
+        return pd.read_gbq(query)
+
     def daily_intensity(self):
 
         df = self._extract_daily_carbon_intensity_from_big_query()
@@ -293,21 +309,16 @@ class UtilityAPI:
 
         return output
 
-    def query_timeseries_model(self):
-        query = """
-        SELECT
-        *
-        FROM
-        ML.FORECAST(
-            MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`,
-            STRUCT(2232 AS horizon)
-        )
-        """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
-        )
+    def timeseries_prediction(self):
+        df = self._query_timeseries_model()
 
-        return pd.read_gbq(query)
+        df['forecast_timestamp'] = df['forecast_timestamp'].astype(str)
+
+        output = {
+            'forecast': df.to_dict(orient='records')
+        }
+
+        return output
 
     def create_timeseries_model(self):
         client = bigquery.Client()
@@ -321,7 +332,7 @@ class UtilityAPI:
         AUTO_ARIMA= TRUE,
         DATA_FREQUENCY ='HOURLY',
         HOLIDAY_REGION = 'JP',
-        HORIZON = 2232
+        HORIZON = 2500
         ) AS
             SELECT
             datetime,
