@@ -20,8 +20,8 @@ class KyudenAreaScraper:
 
         CSV_URLS = []
 
-        groupNum = "0257"  # Changes every month
-        fileNumStart = 4370  # Changes every month
+        groupNum = "0260"  # Changes every month
+        fileNumStart = 8826  # Changes every month
         # TODO: Move to a HTML parsing version to get the new endpoints each month
 
         for year in range(28, 31):
@@ -44,10 +44,10 @@ class KyudenAreaScraper:
                 )
                 CSV_URLS.append(url)
 
-        # TODO - See how it changes next month
-        CSV_URLS.append(
-            "https://www.kyuden.co.jp/var/rev0/0257/4387/area_jyukyu_jisseki_2020_07_08.csv",
-        )
+        # TODO - Goes wierd in the off months, need to redo with page grabbing
+        # CSV_URLS.append(
+        #     "https://www.kyuden.co.jp/var/rev0/0257/4387/area_jyukyu_jisseki_2020_07_08.csv",
+        # )
 
         dtypes = {
             "MWh_area_demand": int,
