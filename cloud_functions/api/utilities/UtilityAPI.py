@@ -5,6 +5,9 @@ from google.cloud import bigquery
 import os
 stage = os.environ['STAGE']
 
+HORIZON = 2500
+# Bit more than than 3 months of hours (24h * 31d * 3m = 2322)
+
 
 class UtilityAPI:
     def __init__(self, utility):
@@ -13,25 +16,50 @@ class UtilityAPI:
 
     # Likely to be Overwritten
     def _get_intensity_query_string(self):
+        query_string = """
+        AVG(
+            {intensity_calc}
+        ) as carbon_intensity
+        FROM (
+            {from_string}
+        )
+        """.format(
+            from_string=self._pumped_storage_calc_query_string(),
+            intensity_calc=self._carbon_intensity_query_string()
+        )
+        return query_string
+
+    def _pumped_storage_calc_query_string(self):
+        return """
+            SELECT *,
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
+            FROM (
+                SELECT *,
+                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
+                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
+                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+            )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+    def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
-        AVG((
-            (kWh_nuclear * {intensity_nuclear}) + 
-            (kWh_fossil * {intensity_fossil}) + 
-            (kWh_hydro * {intensity_hydro}) + 
-            (kWh_geothermal * {intensity_geothermal}) + 
-            (kWh_biomass * {intensity_biomass}) +
-            (kWh_solar_output * {intensity_solar_output}) +
-            (kWh_wind_output * {intensity_wind_output}) +
-            (kWh_pumped_storage * {intensity_pumped_storage}) +
-            (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * {intensity_interconnectors}) 
-            ) / kWh_total
-            ) as carbon_intensity
-        FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+        (
+            (daMWh_nuclear * {intensity_nuclear}) +
+            (daMWh_fossil * {intensity_fossil}) +
+            (daMWh_hydro * {intensity_hydro}) +
+            (daMWh_geothermal * {intensity_geothermal}) +
+            (daMWh_biomass * {intensity_biomass}) +
+            (daMWh_solar_output * {intensity_solar_output}) +
+            (daMWh_wind_output * {intensity_wind_output}) +
+            (daMWh_pumped_storage_contribution * {intensity_pumped_storage}) +
+            (daMWh_interconnector_contribution * {intensity_interconnectors})
+        ) / daMWh_total_generation
         """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
             intensity_hydro=ci["kWh_hydro"],
@@ -146,6 +174,23 @@ class UtilityAPI:
                 bqStageName=self.bqStageName,
                 utility=self.utility,
                 year=year
+        )
+
+        return pd.read_gbq(query)
+
+    def _query_timeseries_model(self):
+        query = """
+        SELECT
+        *
+        FROM
+        ML.FORECAST(
+            MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`,
+            STRUCT({horizon_size} AS horizon)
+        )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility,
+            horizon_size=HORIZON
         )
 
         return pd.read_gbq(query)
@@ -269,27 +314,47 @@ class UtilityAPI:
 
         return output
 
-    def create_linear_regression_model(self):
+    def timeseries_prediction(self):
+        df = self._query_timeseries_model()
+
+        df['forecast_timestamp'] = df['forecast_timestamp'].astype(str)
+
+        output = {
+            'forecast': df.to_dict(orient='records')
+        }
+
+        return output
+
+    def create_timeseries_model(self):
         client = bigquery.Client()
 
         query = """
-        CREATE OR REPLACE MODEL `japan-grid-carbon-api{bqStageName}.{utility}.year_month_dayofweek_model`
+        CREATE OR REPLACE MODEL `japan-grid-carbon-api{bqStageName}.{utility}.model_intensity_timeseries`
         OPTIONS(
-        model_type='LINEAR_REG',
-        input_label_cols=['carbon_intensity']
-        ) AS""".format(
+        MODEL_TYPE='ARIMA',
+        TIME_SERIES_TIMESTAMP_COL="datetime",
+        TIME_SERIES_DATA_COL ="carbon_intensity",
+        AUTO_ARIMA= TRUE,
+        DATA_FREQUENCY ='HOURLY',
+        HOLIDAY_REGION = 'JP',
+        HORIZON = {horizon_size}
+        ) AS
+            SELECT
+            datetime,
+                {intensity_calc}
+                as carbon_intensity
+            FROM (
+                {from_string}
+            )
+        order by datetime
+        """.format(
             bqStageName=self.bqStageName,
-            utility=self.utility
-        ) + """
-        SELECT
-        EXTRACT(MONTH FROM datetime) AS month,
-        EXTRACT(YEAR FROM datetime) AS year,
-        EXTRACT(DAYOFWEEK FROM datetime) AS dayofweek,
-        EXTRACT(HOUR FROM datetime) AS hour,
-        """ + self._get_intensity_query_string() + """
-        GROUP BY year, month, dayofweek, hour
-        order by year, month, dayofweek, hour asc
-        """
+            utility=self.utility,
+            from_string=self._pumped_storage_calc_query_string(),
+            intensity_calc=self._carbon_intensity_query_string(),
+            horizon_size=HORIZON
+        )
+        print("Creating ARIMA Timeseries model for " + self.utility)
 
         queryJob = client.query(query)
         result = queryJob.result()
@@ -316,8 +381,6 @@ class UtilityAPI:
         json = response.json()
         factors = json["data"][0]
 
-        print("Resolving Intensities for " + self.utility)
-
         return {
             "kWh_nuclear": factors["Nuclear"],
             "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
@@ -326,7 +389,8 @@ class UtilityAPI:
             "kWh_biomass": factors["Biomass"],
             "kWh_solar_output": factors["Solar"],
             "kWh_wind_output": factors["Wind"],
-            "kWh_pumped_storage": factors["Pumped Storage"],
+            # Not always charged when renewables available, average of this
+            "kWh_pumped_storage": 80.07,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }

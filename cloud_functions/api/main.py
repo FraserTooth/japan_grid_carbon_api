@@ -170,3 +170,30 @@ def daily_carbon_intensity_prediction(utility, year):
     response["fromCache"] = False
 
     return json.dumps(response), 200, headers
+
+
+@app.route('/v0.1/carbon_intensity/<utility>/prediction')
+def carbon_intensity_timeseries_prediction(utility):
+    response = {}
+
+    utilityClass = selectUtility(utility)
+
+    # Sense Check Utiltity
+    if utilityClass == None:
+        return BAD_UTILITY, 400, headers
+
+    print("Fetching Prediction - " + utility + ":")
+
+    # Check Cache
+    if 'prediction' in cache[utility]:
+        print("Returning cache...")
+        return json.dumps(cache[utility]['prediction']), 200, headers
+
+    response['data'] = utilityClass.timeseries_prediction()
+    response['fromCache'] = True
+
+    # Populate Cache
+    cache[utility]['prediction'] = copy.deepcopy(response)
+    response["fromCache"] = False
+
+    return json.dumps(response), 200, headers
