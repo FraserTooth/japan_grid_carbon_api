@@ -1,0 +1,67 @@
+swagger: "2.0"
+info:
+  title: Denki Carbon API
+  description: The API behind denkicarbon.jp
+  version: 0.1.0
+host: apitest.denkicarbon.jp
+schemes:
+  - https
+produces:
+  - application/json
+x-google-backend:
+  address: https://us-central1-japan-grid-carbon-api-staging.cloudfunctions.net/api
+  protocol: h2
+  path_translation: APPEND_PATH_TO_ADDRESS
+paths:
+  /v0.1/carbon_intensity/{utility}/prediction:
+    get:
+      summary: Get Forcast Predictions for Carbon Intensity for a given utility
+      operationId: carbon_intensity_prediction
+      parameters:
+        - in: path
+          name: utility
+          type: string
+          required: true
+          description: String of the utility to scrape from
+      responses:
+        "200":
+          description: Forcast for 2500 hours ahead of the previously available data
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        forecast_timestamp:
+                          type: string
+                          example: "2020-11-01 00:00:00+00:00"
+                        forecast_value:
+                          type: number
+                          example: 657.4459274930311
+                        standard_error:
+                          type: number
+                          example: 5.552266591154512
+                        confidence_level:
+                          type: number
+                          example: 0.95
+                        prediction_interval_lower_bound:
+                          type: number
+                          example: 646.5831505932923
+                        prediction_interval_upper_bound:
+                          type: number
+                          example: 657.4459274930311
+                        confidence_interval_lower_bound:
+                          type: number
+                          example: 646.5831505932923
+                        confidence_interval_upper_bound:
+                          type: number
+                          example: 668.30870439277
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
