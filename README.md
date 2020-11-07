@@ -87,9 +87,8 @@ source .venv/bin/activate
 gcloud functions logs read
 
 # Deploy Manually
-#   First argument, environment
-#   Second argument, project ID in google cloud
-./deploy.sh staging japan-grid-carbon-api
+#   First argument, environment (check deploy.sh if you need to change project IDs etc.)
+./deploy.sh staging
 
 # Run Locally
 #   First argument, api name

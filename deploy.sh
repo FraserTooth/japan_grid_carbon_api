@@ -9,11 +9,11 @@ then
     SPECPATH="openapi-functions-staging.yaml"
 elif [ $STAGE == "production" ]
 then
-    ENDPOINT="api.denkicarbon.jp"
-    SPECPATH="openapi-functions.yaml"
     PROJECT="japan-grid-carbon-api"
+    ENDPOINT="data.denkicarbon.jp"
+    SPECPATH="openapi-functions-production.yaml"
 else
-    echo "No stage Given"
+    echo "No Stage Given"
     exit 1
 fi
 
@@ -25,12 +25,11 @@ gcloud functions set-iam-policy --region=us-central1 api policy.json
 
 sls deploy --stage $STAGE --id $PROJECT
 
-gcloud endpoints services deploy cloud_functions/$SPECPATH \
---project $PROJECT
+gcloud endpoints services deploy $SPECPATH --project $PROJECT
 
-CONFIG_ID=$(gcloud endpoints configs list --service $ENDPOINT | grep -oP -m 1 '^\d\d\d\d-\d\d-\S+')
+CONFIG_ID=$(gcloud endpoints configs list --service $ENDPOINT --project $PROJECT | grep -oP -m 1 '^\d\d\d\d-\d\d-\S+')
 
-./gcloud_build_image -s $ENDPOINT -c $CONFIG_ID -p $PROJECT
+../gcloud_build_image -s $ENDPOINT -c $CONFIG_ID -p $PROJECT
 
 gcloud run deploy api \
 --image="gcr.io/$PROJECT/endpoints-runtime-serverless:2.20.0-$ENDPOINT-$CONFIG_ID" \
