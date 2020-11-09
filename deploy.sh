@@ -40,4 +40,5 @@ gcloud run deploy api \
 --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
 --allow-unauthenticated \
 --platform managed \
---project=$PROJECT
+--project=$PROJECT \
+--region=us-central1
