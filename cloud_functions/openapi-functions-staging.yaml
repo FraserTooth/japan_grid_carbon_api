@@ -31,32 +31,7 @@ paths:
                   forecast:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        forecast_timestamp:
-                          type: string
-                          example: "2020-11-01 00:00:00+00:00"
-                        forecast_value:
-                          type: number
-                          example: 657.4459274930311
-                        standard_error:
-                          type: number
-                          example: 5.552266591154512
-                        confidence_level:
-                          type: number
-                          example: 0.95
-                        prediction_interval_lower_bound:
-                          type: number
-                          example: 646.5831505932923
-                        prediction_interval_upper_bound:
-                          type: number
-                          example: 657.4459274930311
-                        confidence_interval_lower_bound:
-                          type: number
-                          example: 646.5831505932923
-                        confidence_interval_upper_bound:
-                          type: number
-                          example: 668.30870439277
+                      $ref: "#/definitions/carbonIntensityForecast"
               fromCache:
                 type: boolean
         "400":
@@ -94,13 +69,13 @@ paths:
 
   /v1/carbon_intensity/average/year/{utility}:
     get:
-      summary: Average Intensity for each hour of the day, across a given breakdown. Based on historical data for a given utility.
+      summary: Average Intensity for each hour of the day, broken down by year. Based on historical data for a given utility.
       operationId: average_intensity_breakdown_year
       parameters:
         - $ref: "#/parameters/utility"
       responses:
         "200":
-          description: Average carbon intensity for a given day. Hours go from 0-23.
+          description: Average carbon intensity for a given day in a given year. Hours go from 0-23.
           schema:
             type: object
             properties:
@@ -116,13 +91,13 @@ paths:
 
   /v1/carbon_intensity/average/month/{utility}:
     get:
-      summary: Average Intensity for each hour of the day, across a given breakdown. Based on historical data for a given utility.
+      summary: Average Intensity for each hour of the day, broken down by month. Based on historical data for a given utility.
       operationId: average_intensity_breakdown_month
       parameters:
         - $ref: "#/parameters/utility"
       responses:
         "200":
-          description: Average carbon intensity for a given day. Hours go from 0-23.
+          description: Average carbon intensity for a given day in a given month. Hours go from 0-23.
           schema:
             type: object
             properties:
@@ -136,7 +111,72 @@ paths:
         "400":
           description: Invalid Utility Specified
 
+  /v1/carbon_intensity/historic/{utility}:
+    get:
+      summary: Historic intensities for a given utility.
+      operationId: historic_intensity
+      parameters:
+        - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
+        - $ref: "#/parameters/toDate"
+      responses:
+        "200":
+          description: Carbon intensity by hour, between the dates specified.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  historic:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensity"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
 definitions:
+  carbonIntensityForecast:
+    type: object
+    properties:
+      forecast_timestamp:
+        type: string
+        example: "2020-11-01 00:00:00+00:00"
+      forecast_value:
+        type: number
+        example: 657.4459274930311
+      standard_error:
+        type: number
+        example: 5.552266591154512
+      confidence_level:
+        type: number
+        example: 0.95
+      prediction_interval_lower_bound:
+        type: number
+        example: 646.5831505932923
+      prediction_interval_upper_bound:
+        type: number
+        example: 657.4459274930311
+      confidence_interval_lower_bound:
+        type: number
+        example: 646.5831505932923
+      confidence_interval_upper_bound:
+        type: number
+        example: 668.30870439277
+
+  carbonIntensity:
+    type: object
+    properties:
+      datetime:
+        type: string
+        format: date-time
+        example: "2020-11-01 00:00:00+00:00"
+      carbon_intensity:
+        type: number
+        example: 674.2050851161346
+
   averageCarbonIntensityForDay:
     type: object
     properties:
@@ -206,3 +246,17 @@ parameters:
       - yonden
       - kyuden
       - okiden
+
+  fromDate:
+    in: query
+    description: From Date - YYYY/MM/DD
+    name: from
+    type: string
+    format: date-time
+
+  toDate:
+    in: query
+    description: To Date (inclusive) - YYYY/MM/DD
+    name: to
+    type: string
+    format: date-time
