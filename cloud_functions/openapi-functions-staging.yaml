@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   title: Denki Carbon API
   description: The API behind denkicarbon.jp
-  version: 0.1.0
+  version: 1
 host: apitest.denkicarbon.jp
 schemes:
   - https
@@ -13,16 +13,12 @@ x-google-backend:
   protocol: h2
   path_translation: APPEND_PATH_TO_ADDRESS
 paths:
-  /v0.1/carbon_intensity/{utility}/prediction:
+  /v1/carbon_intensity/forecast/{utility}:
     get:
       summary: Get Forcast Predictions for Carbon Intensity for a given utility
       operationId: carbon_intensity_prediction
       parameters:
-        - in: path
-          name: utility
-          type: string
-          required: true
-          description: String of the utility to scrape from
+        - $ref: "#/components/parameters/utility"
       responses:
         "200":
           description: Forcast for 2500 hours ahead of the previously available data
@@ -65,3 +61,75 @@ paths:
                 type: boolean
         "400":
           description: Invalid Utility Specified
+
+  /v1/carbon_intensity/average/{utility}:
+    get:
+      summary: Average Intensity for each hour of the day. Based on historical data for a given utility.
+      operationId: average_intensity
+      parameters:
+        - $ref: "#/components/parameters/utility"
+      responses:
+        "200":
+          description: Average carbon intensity for a given day. Hours go from 0-23.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  carbon_intensity_by_hour:
+                    type: array
+                    items:
+                      $ref: "#/definitions/averageCarbonIntensityForDay"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  /v1/carbon_intensity/average/year/{utility}:
+    get:
+      summary: Average Intensity for each hour of the day, across a given breakdown. Based on historical data for a given utility.
+      operationId: average_intensity_breakdown
+      parameters:
+        - $ref: "#/components/parameters/utility"
+      responses:
+        "200":
+          description: Average carbon intensity for a given day. Hours go from 0-23.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  carbon_intensity_by_year:
+                    type: object
+                    properties:
+                      <year>:
+                        type: array
+                        items:
+                          $ref: "#/definitions/averageCarbonIntensityForDay"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+definitions:
+  averageCarbonIntensityForDay:
+    type: object
+    properties:
+      hour:
+        type: integer
+        example: 0
+      carbon_intensity:
+        type: number
+        example: 674.2050851161346
+
+components:
+  parameters:
+    utility:
+      in: path
+      name: utility
+      type: string
+      required: true
+      description: String of the utility to get information for
+      pattern: ^cepco|chuden|hepco|kepco|kyuden|okiden|rikuden|tepco|tohokuden|yonden$

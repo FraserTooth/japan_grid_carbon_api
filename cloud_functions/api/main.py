@@ -78,7 +78,7 @@ def api(request):
             return app.process_response(response)
 
 
-@app.route('/v0.1/daily_carbon_intensity/<utility>')
+@app.route('/v1/carbon_intensity/average/<utility>')
 def daily_carbon_intensity(utility):
     response = {}
 
@@ -102,7 +102,7 @@ def daily_carbon_intensity(utility):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v0.1/daily_carbon_intensity/<utility>/<breakdown>')
+@app.route('/v1/carbon_intensity/average/<breakdown>/<utility>')
 def daily_carbon_intensity_with_breakdown(utility, breakdown):
     response = {}
 
@@ -139,7 +139,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v0.1/daily_carbon_intensity/<utility>/prediction/<year>')
+@app.route('/v1/carbon_intensity/forecast/average/<year>/<utility>')
 def daily_carbon_intensity_prediction(utility, year):
     response = {}
 
@@ -172,7 +172,7 @@ def daily_carbon_intensity_prediction(utility, year):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v0.1/carbon_intensity/<utility>/prediction')
+@app.route('/v1/carbon_intensity/forecast/<utility>')
 def carbon_intensity_timeseries_prediction(utility):
     response = {}
 
