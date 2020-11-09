@@ -14,7 +14,6 @@ class UtilityAPI:
         self.utility = utility
         self.bqStageName = "" if stage == "production" else "-staging"
 
-    # Likely to be Overwritten
     def _get_intensity_query_string(self):
         query_string = """
         AVG(
@@ -194,6 +193,36 @@ class UtilityAPI:
         )
 
         return pd.read_gbq(query)
+
+    def historic_intensity(self, from_date, to_date=None):
+
+        if to_date == None:
+            to_date = from_date
+
+        query = """
+        SELECT
+        datetime as timestamp,
+        {intensity_calc}
+        as carbon_intensity
+        FROM (
+            {from_string}
+        )
+        WHERE EXTRACT(DATE from datetime) BETWEEN DATE("{from_date}") and DATE("{to_date}")
+        order by datetime
+        """.format(
+            from_string=self._pumped_storage_calc_query_string(),
+            intensity_calc=self._carbon_intensity_query_string(),
+            from_date=from_date,
+            to_date=to_date
+        )
+
+        df = pd.read_gbq(query)
+
+        output = {"historic":
+                  df.to_dict(orient='records')
+                  }
+
+        return output
 
     def daily_intensity(self):
 

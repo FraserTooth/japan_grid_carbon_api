@@ -169,7 +169,7 @@ definitions:
   carbonIntensity:
     type: object
     properties:
-      datetime:
+      timestamp:
         type: string
         format: date-time
         example: "2020-11-01 00:00:00+00:00"
