@@ -233,14 +233,19 @@ class UtilityAPI:
 
         df = self._extract_daily_carbon_intensity_by_month_from_big_query()
 
-        df.reset_index(inplace=True)
+        data = df.groupby('month').apply(
+            lambda year: year[['hour', 'carbon_intensity']].to_dict(
+                orient='records')
+        )
+
+        remap = list(map(lambda month, data: {
+            "month": month, "data": data}, data.index, data.array))
 
         output = {
-            "carbon_intensity_by_month": df.groupby('month')
-            .apply(
-                lambda month: month[['hour', 'carbon_intensity']]
-                .to_dict(orient='records')
-            ).to_dict()
+            "carbon_intensity_average": {
+                "breakdown": 'month',
+                "data": remap
+            }
         }
 
         return output

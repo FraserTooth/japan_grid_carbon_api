@@ -138,26 +138,35 @@ def test_daily_intensity_by_month(mocker):
     )
 
     expected = {
-        "carbon_intensity_by_month": {
-            1: [
+        "carbon_intensity_average": {
+            "breakdown": "month",
+            "data": [
                 {
-                    "hour": 1,
-                    "carbon_intensity": 500,
+                    "month": 1,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 500,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 550,
+                        }
+                    ]
                 },
                 {
-                    "hour": 2,
-                    "carbon_intensity": 550,
-                }
-            ],
-            2: [
-                {
-                    "hour": 1,
-                    "carbon_intensity": 600,
+                    "month": 2,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 600,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 650,
+                        }
+                    ]
                 },
-                {
-                    "hour": 2,
-                    "carbon_intensity": 650,
-                }
             ]
         }
     }
