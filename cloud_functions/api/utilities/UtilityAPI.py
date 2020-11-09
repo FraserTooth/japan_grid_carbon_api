@@ -201,8 +201,9 @@ class UtilityAPI:
 
         df.reset_index(inplace=True)
 
-        output = {"carbon_intensity_by_hour": df[[
-            'hour', 'carbon_intensity']].to_dict("records")
+        output = {"carbon_intensity_average": {
+            "breakdown": "hour",
+            "data": df[['hour', 'carbon_intensity']].to_dict("records")}
         }
 
         return output
@@ -211,14 +212,19 @@ class UtilityAPI:
 
         df = self._extract_daily_carbon_intensity_by_year_from_big_query()
 
-        df.reset_index(inplace=True)
+        data = df.groupby('year').apply(
+            lambda year: year[['hour', 'carbon_intensity']].to_dict(
+                orient='records')
+        )
+
+        remap = list(map(lambda year, data: {
+            "year": year, "data": data}, data.index, data.array))
 
         output = {
-            "carbon_intensity_by_year": df.groupby('year')
-            .apply(
-                lambda year: year[['hour', 'carbon_intensity']]
-                .to_dict(orient='records')
-            ).to_dict()
+            "carbon_intensity_average": {
+                "breakdown": 'year',
+                "data": remap
+            }
         }
 
         return output

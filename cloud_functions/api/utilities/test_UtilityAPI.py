@@ -103,16 +103,19 @@ def test_daily_intensity(mocker):
     )
 
     expected = {
-        "carbon_intensity_by_hour": [
-            {
-                "hour": 1,
-                "carbon_intensity": 500,
-            },
-            {
-                "hour": 2,
-                "carbon_intensity": 550,
-            }
-        ]
+        "carbon_intensity_average": {
+            "breakdown": "hour",
+            "data": [
+                {
+                    "hour": 1,
+                    "carbon_intensity": 500,
+                },
+                {
+                    "hour": 2,
+                    "carbon_intensity": 550,
+                }
+            ]
+        }
     }
 
     assert expected == api.daily_intensity()
@@ -327,3 +330,58 @@ def test_daily_intensity_prediction_for_year_by_month_and_weekday(mocker):
 
     assert expected == api.daily_intensity_prediction_for_year_by_month_and_weekday(
         2030)
+
+
+def test_daily_intensity_by_year(mocker):
+    api = UtilityAPI('tepco')
+
+    def test_daily_intensity_by_year(self):
+        d = {
+            'hour': [1, 2, 3, 4],
+            'year': [2016, 2016, 2017, 2017],
+            'carbon_intensity': [500, 550, 600, 650],
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        test_daily_intensity_by_year
+    )
+
+    expected = {
+        "carbon_intensity_average": {
+            "breakdown": "year",
+            "data": [
+                {
+                    "year": 2016,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 500,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 550,
+                        }
+                    ]
+                },
+                {
+                    "year": 2017,
+                    "data": [
+                        {
+                            "hour": 3,
+                            "carbon_intensity": 600,
+                        },
+                        {
+                            "hour": 4,
+                            "carbon_intensity": 650,
+                        }
+                    ]
+                },
+            ]
+
+
+        }
+    }
+
+    assert expected == api.daily_intensity_by_year()
