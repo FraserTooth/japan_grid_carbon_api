@@ -437,4 +437,4 @@ def test_historic_data(mocker):
         ]
     }
 
-    assert expected == api.historic_intensity('2020-11-01')
+    assert expected == api.historic_intensity('2020-11-01', '2020-11-02')

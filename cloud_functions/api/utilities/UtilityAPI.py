@@ -194,11 +194,7 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
-    def historic_intensity(self, from_date, to_date=None):
-
-        if to_date == None:
-            to_date = from_date
-
+    def historic_intensity(self, from_date, to_date):
         query = """
         SELECT
         datetime as timestamp,

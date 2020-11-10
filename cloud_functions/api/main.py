@@ -97,14 +97,18 @@ def historical_intensity(utility, fromDate, toDate=None):
     if utilityClass == None:
         return BAD_UTILITY, 400, headers
 
+    # Check fromDate
+    if not isValidDate(fromDate):
+        return BAD_DATE, 400, headers
+
     # Check toDate (optional)
     if (toDate != None):
         if not isValidDate(toDate):
             return BAD_DATE, 400, headers
+    else:
+        # Set to fromDate if needed
+        toDate = fromDate
 
-    # Check fromDate
-    if not isValidDate(fromDate):
-        return BAD_DATE, 400, headers
 
     # Check Cache
     try:
