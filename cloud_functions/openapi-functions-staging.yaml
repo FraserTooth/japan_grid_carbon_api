@@ -13,7 +13,7 @@ x-google-backend:
   protocol: h2
   path_translation: APPEND_PATH_TO_ADDRESS
 paths:
-  /v1/carbon_intensity/forecast/{utility}:
+  "/v1/carbon_intensity/forecast/{utility}":
     get:
       summary: Get Forcast Predictions for Carbon Intensity for a given utility
       operationId: carbon_intensity_prediction
@@ -37,7 +37,7 @@ paths:
         "400":
           description: Invalid Utility Specified
 
-  /v1/carbon_intensity/average/{utility}:
+  "/v1/carbon_intensity/average/{utility}":
     get:
       summary: Average Intensity for each hour of the day. Based on historical data for a given utility.
       operationId: average_intensity
@@ -67,7 +67,7 @@ paths:
         "400":
           description: Invalid Utility Specified
 
-  /v1/carbon_intensity/average/year/{utility}:
+  "/v1/carbon_intensity/average/year/{utility}":
     get:
       summary: Average Intensity for each hour of the day, broken down by year. Based on historical data for a given utility.
       operationId: average_intensity_breakdown_year
@@ -89,7 +89,7 @@ paths:
         "400":
           description: Invalid Utility Specified
 
-  /v1/carbon_intensity/average/month/{utility}:
+  "/v1/carbon_intensity/average/month/{utility}":
     get:
       summary: Average Intensity for each hour of the day, broken down by month. Based on historical data for a given utility.
       operationId: average_intensity_breakdown_month
@@ -111,9 +111,34 @@ paths:
         "400":
           description: Invalid Utility Specified
 
-  /v1/carbon_intensity/historic/{utility}/{from}/{to}:
+  "/v1/carbon_intensity/historic/{utility}/{from}":
     get:
-      summary: Historic intensities for a given utility.
+      summary: Historic intensities for the provided utility on the provided day.
+      operationId: historic_intensity_date
+      parameters:
+        - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
+      responses:
+        "200":
+          description: Carbon intensity by hour, on the date specified.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  historic:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensity"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/historic/{utility}/{from}/{to}":
+    get:
+      summary: Historic intensities for the provided utility on the provided days.
       operationId: historic_intensity
       parameters:
         - $ref: "#/parameters/utility"
@@ -258,9 +283,9 @@ parameters:
 
   toDate:
     in: path
-    description: "To Date (inclusive) in format YYYY-MM-DD e.g. 2017-09-25. Optional: if not included, will return all data for fromDate."
+    description: To Date (inclusive) in format YYYY-MM-DD e.g. 2017-09-25
     name: to
     type: string
     format: date-time
-    required: false
+    required: true
     pattern: '^\d\d\d\d-\d\d-\d\d$'
