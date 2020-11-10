@@ -217,6 +217,7 @@ class UtilityAPI:
         )
 
         df = pd.read_gbq(query)
+        df['timestamp'] = df['timestamp'].astype(str)
 
         output = {"historic":
                   df.to_dict(orient='records')
