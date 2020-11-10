@@ -394,3 +394,47 @@ def test_daily_intensity_by_year(mocker):
     }
 
     assert expected == api.daily_intensity_by_year()
+
+
+def test_historic_data(mocker):
+    api = UtilityAPI('tepco')
+
+    def test_historic_data(self):
+        d = {
+            'timestamp': [
+                "2020-11-01 00:00:00+00:00",
+                "2020-11-01 01:00:00+00:00",
+                "2020-11-01 02:00:00+00:00",
+                "2020-11-01 03:00:00+00:00"
+            ],
+            'carbon_intensity': [500, 550, 600, 650],
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        test_historic_data
+    )
+
+    expected = {
+        "historic": [
+            {
+                "timestamp": "2020-11-01 00:00:00+00:00",
+                "carbon_intensity": 500,
+            },
+            {
+                "timestamp": "2020-11-01 01:00:00+00:00",
+                "carbon_intensity": 550,
+            },
+            {
+                "timestamp": "2020-11-01 02:00:00+00:00",
+                "carbon_intensity": 600,
+            },
+            {
+                "timestamp": "2020-11-01 03:00:00+00:00",
+                "carbon_intensity": 650,
+            },
+        ]
+    }
+
+    assert expected == api.historic_intensity('2020-11-01', '2020-11-02')
