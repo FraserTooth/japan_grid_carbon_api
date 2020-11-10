@@ -259,7 +259,7 @@ parameters:
     name: utility
     type: string
     required: true
-    description: String of the utility to get information for
+    description: String of the utility to get information for, allowed strings correspond to a given utiltiy, lowercase and simplified - [List of Japanese Electrical Utilities On Wikipedia](https://en.wikipedia.org/wiki/Energy_in_Japan#Utilities)
     enum:
       - tepco
       - tohokuden
