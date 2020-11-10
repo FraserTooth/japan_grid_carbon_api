@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   title: Denki Carbon API
   description: The API behind denkicarbon.jp
-  version: 0.1.0
+  version: "1"
 host: data.denkicarbon.jp
 schemes:
   - https
