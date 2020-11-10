@@ -261,16 +261,16 @@ parameters:
     required: true
     description: String of the utility to get information for, allowed strings correspond to a given utiltiy, lowercase and simplified - [List of Japanese Electrical Utilities On Wikipedia](https://en.wikipedia.org/wiki/Energy_in_Japan#Utilities)
     enum:
-      - tepco
-      - tohokuden
-      - kepco
+      - cepco
       - chuden
       - hepco
-      - rikuden
-      - cepco
-      - yonden
+      - kepco
       - kyuden
       - okiden
+      - rikuden
+      - tepco
+      - tohokuden
+      - yonden
 
   fromDate:
     in: path
