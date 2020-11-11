@@ -54,9 +54,9 @@ class AreaDataScraper:
         self._insert_into_bigquery(df)
         print(" - Sent to BigQuery")
 
-        print("Creating Regression Model")
-        self._create_linear_regression_model()
-        print(" - Regression Created")
+        print("Creating Timeseries Model")
+        self._create_timeseries_model()
+        print(" - Timeseries Model Created")
         return numRows
 
     def _upload_blob_to_storage(self, df):
@@ -84,7 +84,7 @@ class AreaDataScraper:
 
         df.to_gbq(table_id, if_exists="replace")
 
-    def _create_linear_regression_model(self):
+    def _create_timeseries_model(self):
 
         # Dynamically Pull in the API code
         #   this function runs once upon scraping
@@ -99,7 +99,7 @@ class AreaDataScraper:
         )
 
         api = UtilityAPI()
-        return api.create_linear_regression_model()
+        return api.create_timeseries_model()
 
 
 class BigQueryError(Exception):

@@ -1,0 +1,291 @@
+swagger: "2.0"
+info:
+  title: Denki Carbon API
+  description: The API behind denkicarbon.jp
+  version: "1"
+host: apitest.denkicarbon.jp
+schemes:
+  - https
+produces:
+  - application/json
+x-google-backend:
+  address: https://us-central1-japan-grid-carbon-api-staging.cloudfunctions.net/api
+  protocol: h2
+  path_translation: APPEND_PATH_TO_ADDRESS
+paths:
+  "/v1/carbon_intensity/forecast/{utility}":
+    get:
+      summary: Get Forcast Predictions for Carbon Intensity for a given utility
+      operationId: carbon_intensity_prediction
+      parameters:
+        - $ref: "#/parameters/utility"
+      responses:
+        "200":
+          description: Forcast for 2500 hours ahead of the previously available data
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  forecast:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensityForecast"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/average/{utility}":
+    get:
+      summary: Average Intensity for each hour of the day. Based on historical data for a given utility.
+      operationId: average_intensity
+      parameters:
+        - $ref: "#/parameters/utility"
+      responses:
+        "200":
+          description: Average carbon intensity for a given day. Hours go from 0-23.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  carbon_intensity_average:
+                    type: object
+                    properties:
+                      breakdown:
+                        type: string
+                        example: "hour"
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/definitions/averageCarbonIntensityForDay"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/average/year/{utility}":
+    get:
+      summary: Average Intensity for each hour of the day, broken down by year. Based on historical data for a given utility.
+      operationId: average_intensity_breakdown_year
+      parameters:
+        - $ref: "#/parameters/utility"
+      responses:
+        "200":
+          description: Average carbon intensity for a given day in a given year. Hours go from 0-23.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  carbon_intensity_average:
+                    $ref: "#/definitions/averageBreakdownYear"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/average/month/{utility}":
+    get:
+      summary: Average Intensity for each hour of the day, broken down by month. Based on historical data for a given utility.
+      operationId: average_intensity_breakdown_month
+      parameters:
+        - $ref: "#/parameters/utility"
+      responses:
+        "200":
+          description: Average carbon intensity for a given day in a given month. Hours go from 0-23.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  carbon_intensity_average:
+                    $ref: "#/definitions/averageBreakdownMonth"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/historic/{utility}/{from}":
+    get:
+      summary: Historic intensities for the provided utility on the provided day.
+      operationId: historic_intensity_date
+      parameters:
+        - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
+      responses:
+        "200":
+          description: Carbon intensity by hour, on the date specified.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  historic:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensity"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+  "/v1/carbon_intensity/historic/{utility}/{from}/{to}":
+    get:
+      summary: Historic intensities for the provided utility on the provided days.
+      operationId: historic_intensity
+      parameters:
+        - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
+        - $ref: "#/parameters/toDate"
+      responses:
+        "200":
+          description: Carbon intensity by hour, between the dates specified.
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  historic:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensity"
+              fromCache:
+                type: boolean
+        "400":
+          description: Invalid Utility Specified
+
+definitions:
+  carbonIntensityForecast:
+    type: object
+    properties:
+      forecast_timestamp:
+        type: string
+        example: "2020-11-01 00:00:00+00:00"
+      forecast_value:
+        type: number
+        example: 657.4459274930311
+      standard_error:
+        type: number
+        example: 5.552266591154512
+      confidence_level:
+        type: number
+        example: 0.95
+      prediction_interval_lower_bound:
+        type: number
+        example: 646.5831505932923
+      prediction_interval_upper_bound:
+        type: number
+        example: 657.4459274930311
+      confidence_interval_lower_bound:
+        type: number
+        example: 646.5831505932923
+      confidence_interval_upper_bound:
+        type: number
+        example: 668.30870439277
+
+  carbonIntensity:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+        example: "2020-11-01 00:00:00+00:00"
+      carbon_intensity:
+        type: number
+        example: 674.2050851161346
+
+  averageCarbonIntensityForDay:
+    type: object
+    properties:
+      hour:
+        type: integer
+        example: 0
+      carbon_intensity:
+        type: number
+        example: 674.2050851161346
+
+  averageBreakdownMonth:
+    type: object
+    properties:
+      breakdown:
+        type: string
+        enum: ["month"]
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            month:
+              type: integer
+              example: 1
+            data:
+              type: array
+              items:
+                $ref: "#/definitions/averageCarbonIntensityForDay"
+
+  averageBreakdownYear:
+    type: object
+    discriminator: breakdownYear
+    required:
+      - breakdownYear
+    properties:
+      breakdown:
+        type: string
+        enum: ["year"]
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            year:
+              type: integer
+              example: 2020
+            data:
+              type: array
+              items:
+                $ref: "#/definitions/averageCarbonIntensityForDay"
+
+parameters:
+  utility:
+    in: path
+    name: utility
+    type: string
+    required: true
+    description: String of the utility to get information for, allowed strings correspond to a given utiltiy, lowercase and simplified - [List of Japanese Electrical Utilities On Wikipedia](https://en.wikipedia.org/wiki/Energy_in_Japan#Utilities)
+    enum:
+      - cepco
+      - chuden
+      - hepco
+      - kepco
+      - kyuden
+      - okiden
+      - rikuden
+      - tepco
+      - tohokuden
+      - yonden
+
+  fromDate:
+    in: path
+    description: Start date in format YYYY-MM-DD e.g. 2017-08-25
+    name: from
+    type: string
+    format: date-time
+    required: true
+    pattern: '^\d\d\d\d-\d\d-\d\d$'
+
+  toDate:
+    in: path
+    description: To Date (inclusive) in format YYYY-MM-DD e.g. 2017-09-25
+    name: to
+    type: string
+    format: date-time
+    required: true
+    pattern: '^\d\d\d\d-\d\d-\d\d$'

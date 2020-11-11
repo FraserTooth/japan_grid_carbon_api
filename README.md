@@ -1,22 +1,29 @@
-# japan_grid_carbon_api
+# 🔌 japan_grid_carbon_api 🔌
+## aka Denki Carbon
 
 API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid...roughly
 
+## API Documentation
+- Staging Docs at [docs-staging.denkicarbon.jp](docs-staging.denkicarbon.jp)
+- Production Docs at [docs.denkicarbon.jp](docs.denkicarbon.jp)
+
 ## Work so far:
 
-- Pipeline for Extracting and Formatting TEPCO, Tohokuden and KEPCO Data
+- Pipeline for Extracting and Formatting All Utility Data
 - Combined and extensible endpoint using Flask routing
 - Added Pytest Tests
 - Implementation of the [Serverless](https://www.serverless.com/) deployment framework
-- Basic Website Built [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website)
+- Basic Website Built @ [denkicarbon.jp](denkicarbon.jp) - [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website) 
 
 ## Planned Work:
 
-- Make carbon intensity value data available in the form of an API, based on averaging historic data
+- ~~Make carbon intensity value data available in the form of an API, based on averaging historic data~~
 - Combine Weather Data and Historic Data with ML to make forecast about 'likely current intensity'
+- ~~Allow historic query on intensity~~ DONE!
 - Allow historic query on predictions
 - ~~Incorporate all regions in Japan~~ DONE!
-- Build Good Documentation for the API
+- ~~Build Good Documentation for the API~~ Now Written up in Swagger 2.0 Spec
+- Add Good Documentation for the Code
 - Solve the 'Pumped Storage' Problem 👇
 
 ### How to Contribute
@@ -87,9 +94,8 @@ source .venv/bin/activate
 gcloud functions logs read
 
 # Deploy Manually
-#   First argument, environment
-#   Second argument, project ID in google cloud
-./deploy.sh staging japan-grid-carbon-api
+#   First argument, environment (check deploy.sh if you need to change project IDs etc.)
+./deploy.sh staging
 
 # Run Locally
 #   First argument, api name

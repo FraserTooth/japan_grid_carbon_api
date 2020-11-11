@@ -6,11 +6,26 @@ class TepcoAPI(UtilityAPI):
     def __init__(self):
         super().__init__("tepco")
 
-    def _get_intensity_query_string(self):
+    def _pumped_storage_calc_query_string(self):
+        return """
+            SELECT *,
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
+            FROM (
+                SELECT *,
+                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
+                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
+                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+            )
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+    def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
-        AVG((
+        (
             (daMWh_nuclear * {intensity_nuclear}) +
             (daMWh_fossil * {intensity_fossil}) +
             (daMWh_hydro * {intensity_hydro}) +
@@ -20,21 +35,8 @@ class TepcoAPI(UtilityAPI):
             (daMWh_wind_output * {intensity_wind_output}) +
             (daMWh_pumped_storage_contribution * {intensity_pumped_storage}) +
             (daMWh_interconnector_contribution * {intensity_interconnectors})
-            ) / daMWh_total_generation
-            ) as carbon_intensity
-        FROM (
-            SELECT *,
-            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
-            FROM (
-                SELECT *,
-                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
-                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
-                FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
-            )
-        )
+        ) / daMWh_total_generation
         """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],
             intensity_hydro=ci["kWh_hydro"],

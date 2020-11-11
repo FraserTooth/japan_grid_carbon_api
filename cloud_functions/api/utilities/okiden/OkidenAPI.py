@@ -8,26 +8,28 @@ class OkidenAPI(UtilityAPI):
     def __init__(self):
         super().__init__("okiden")
 
-    def _get_intensity_query_string(self):
+    def _pumped_storage_calc_query_string(self):
+        return """
+            SELECT *,
+            (MWh_fossil + MWh_hydro + MWh_biomass + MWh_solar_output + MWh_wind_output) as MWh_total_generation
+            FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+    def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
         return """
-        AVG((
+        (
             (MWh_fossil * {intensity_fossil}) + 
             (MWh_hydro * {intensity_hydro}) + 
             (MWh_biomass * {intensity_biomass}) +
             (MWh_solar_output * {intensity_solar_output}) +
             (MWh_wind_output * {intensity_wind_output})
-            ) / (MWh_total_generation)
-            ) as carbon_intensity
-        FROM (
-            SELECT *,
-            (MWh_fossil + MWh_hydro + MWh_biomass + MWh_solar_output + MWh_wind_output) as MWh_total_generation
-            FROM `japan-grid-carbon-api{bqStageName}.{utility}.historical_data_by_generation_type`
-        )
+        ) / (MWh_total_generation)
         """.format(
-            bqStageName=self.bqStageName,
-            utility=self.utility,
             intensity_fossil=ci["kWh_fossil"],
             intensity_hydro=ci["kWh_hydro"],
             intensity_biomass=ci["kWh_biomass"],

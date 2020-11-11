@@ -7,7 +7,9 @@ os.environ["STAGE"] = "staging"
 from .main import (daily_carbon_intensity,
                    daily_carbon_intensity_with_breakdown,
                    daily_carbon_intensity_prediction,
-                   clearCache)
+                   carbon_intensity_timeseries_prediction,
+                   clearCache,
+                   historical_intensity)
 
 
 # Before All
@@ -177,6 +179,129 @@ def test_daily_carbon_intensity_predictions_cache(mocker):
         "tepco", 2030)
     body2, code2, cors2 = daily_carbon_intensity_prediction(
         "tepco", 2030)
+
+    expectedData1 = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    expectedData2 = {
+        "data": "xyz",
+        "fromCache": True
+    }
+
+    assert body1 == json.dumps(expectedData1)
+    assert body2 == json.dumps(expectedData2)
+
+# Carbon Intensity Timeseries Predictions
+
+
+def test_carbon_intensity_timeseries_prediction_bad_utility():
+    message, code, cors = carbon_intensity_timeseries_prediction(
+        "fish")
+    assert message == 'Invalid Utility Specified'
+    assert code == 400
+
+
+def test_carbon_intensity_timeseries_prediction_response(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.timeseries_prediction',
+        return_value='xyz'
+    )
+
+    body, code, cors = carbon_intensity_timeseries_prediction(
+        "tepco")
+
+    expectedData = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    assert body == json.dumps(expectedData)
+    assert code == 200
+
+
+def test_carbon_intensity_timeseries_prediction_cache(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.timeseries_prediction',
+        return_value='xyz'
+    )
+
+    body1, code1, cors1 = carbon_intensity_timeseries_prediction(
+        "tepco")
+    body2, code2, cors2 = carbon_intensity_timeseries_prediction(
+        "tepco")
+
+    expectedData1 = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    expectedData2 = {
+        "data": "xyz",
+        "fromCache": True
+    }
+
+    assert body1 == json.dumps(expectedData1)
+    assert body2 == json.dumps(expectedData2)
+
+
+# Carbon Intensity Historic Prediction
+
+
+def test_carbon_intensity_historical_bad_utility():
+    message, code, cors = historical_intensity(
+        "fish", "2020-01-02", "2020-02-02")
+    assert message == 'Invalid Utility Specified'
+    assert code == 400
+
+
+def test_carbon_intensity_historical_bad_date_from():
+    message, code, cors = historical_intensity(
+        "tepco", "fish")
+    assert message == 'Invalid Date Provided'
+    assert code == 400
+
+
+def test_carbon_intensity_historical_bad_date_to():
+    message, code, cors = historical_intensity(
+        "tepco", "2020-01-02", "fish")
+    assert message == 'Invalid Date Provided'
+    assert code == 400
+
+
+def test_carbon_intensity_historical_response(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.historic_intensity',
+        return_value='xyz'
+    )
+
+    body, code, cors = historical_intensity(
+        "tepco", "2020-01-02", "2020-02-02")
+
+    expectedData = {
+        "data": "xyz",
+        "fromCache": False
+    }
+
+    assert body == json.dumps(expectedData)
+    assert code == 200
+
+
+def test_carbon_intensity_historical_cache(mocker):
+
+    mocker.patch(
+        'cloud_functions.api.utilities.tepco.TepcoAPI.TepcoAPI.historic_intensity',
+        return_value='xyz'
+    )
+
+    body1, code1, cors1 = historical_intensity(
+        "tepco", "2020-01-02", "2020-02-02")
+    body2, code2, cors2 = historical_intensity(
+        "tepco", "2020-01-02", "2020-02-02")
 
     expectedData1 = {
         "data": "xyz",

@@ -57,9 +57,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            cd cloud_functions/
-            gcloud functions set-iam-policy --region=us-central1 api policy.json
-            sls deploy --stage staging --id ${GOOGLE_PROJECT_ID}
+            ./deploy.sh staging
 
   deploy-production:
     executor: serverless/default
@@ -100,9 +98,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            cd cloud_functions/
-            gcloud functions set-iam-policy --region=us-central1 api policy.json
-            sls deploy --stage production --id ${GOOGLE_PROJECT_ID}
+            ./deploy.sh production
 
 workflows:
   build-test-and-deploy:

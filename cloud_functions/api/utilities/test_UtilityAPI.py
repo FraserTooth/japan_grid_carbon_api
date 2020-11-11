@@ -46,7 +46,7 @@ def test_get_carbon_intensity_factors():
         "kWh_biomass": 120,
         "kWh_solar_output": 0,
         "kWh_wind_output": 0,
-        "kWh_pumped_storage": 0,
+        "kWh_pumped_storage": 80.07,
         # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
         "kWh_interconnectors": 500
     }
@@ -58,19 +58,33 @@ def test_gbq_query_string():
     api = UtilityAPI('tepco')
 
     expected = """
-        AVG((
-            (kWh_nuclear * 0) + 
-            (kWh_fossil * 741.68489817766) + 
-            (kWh_hydro * 0) + 
-            (kWh_geothermal * 0) + 
-            (kWh_biomass * 120) +
-            (kWh_solar_output * 0) +
-            (kWh_wind_output * 0) +
-            (kWh_pumped_storage * 0) +
-            (if(kWh_interconnectors > 0,kWh_interconnectors, 0) * 500) 
-            ) / kWh_total
-            ) as carbon_intensity
-        FROM `japan-grid-carbon-api-staging.tepco.historical_data_by_generation_type`
+        AVG(
+            
+        (
+            (daMWh_nuclear * 0) +
+            (daMWh_fossil * 741.68489817766) +
+            (daMWh_hydro * 0) +
+            (daMWh_geothermal * 0) +
+            (daMWh_biomass * 120) +
+            (daMWh_solar_output * 0) +
+            (daMWh_wind_output * 0) +
+            (daMWh_pumped_storage_contribution * 80.07) +
+            (daMWh_interconnector_contribution * 500)
+        ) / daMWh_total_generation
+        
+        ) as carbon_intensity
+        FROM (
+            
+            SELECT *,
+            (daMWh_nuclear + daMWh_fossil + daMWh_hydro + daMWh_geothermal + daMWh_biomass + daMWh_solar_output + daMWh_wind_output + daMWh_pumped_storage_contribution + daMWh_interconnector_contribution) as daMWh_total_generation
+            FROM (
+                SELECT *,
+                if(daMWh_interconnectors > 0,daMWh_interconnectors, 0) as daMWh_interconnector_contribution,
+                if(daMWh_pumped_storage > 0,daMWh_pumped_storage, 0) as daMWh_pumped_storage_contribution,
+                FROM `japan-grid-carbon-api-staging.tepco.historical_data_by_generation_type`
+            )
+        
+        )
         """
 
     assert expected == api._get_intensity_query_string()
@@ -89,16 +103,19 @@ def test_daily_intensity(mocker):
     )
 
     expected = {
-        "carbon_intensity_by_hour": [
-            {
-                "hour": 1,
-                "carbon_intensity": 500,
-            },
-            {
-                "hour": 2,
-                "carbon_intensity": 550,
-            }
-        ]
+        "carbon_intensity_average": {
+            "breakdown": "hour",
+            "data": [
+                {
+                    "hour": 1,
+                    "carbon_intensity": 500,
+                },
+                {
+                    "hour": 2,
+                    "carbon_intensity": 550,
+                }
+            ]
+        }
     }
 
     assert expected == api.daily_intensity()
@@ -121,26 +138,35 @@ def test_daily_intensity_by_month(mocker):
     )
 
     expected = {
-        "carbon_intensity_by_month": {
-            1: [
+        "carbon_intensity_average": {
+            "breakdown": "month",
+            "data": [
                 {
-                    "hour": 1,
-                    "carbon_intensity": 500,
+                    "month": 1,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 500,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 550,
+                        }
+                    ]
                 },
                 {
-                    "hour": 2,
-                    "carbon_intensity": 550,
-                }
-            ],
-            2: [
-                {
-                    "hour": 1,
-                    "carbon_intensity": 600,
+                    "month": 2,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 600,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 650,
+                        }
+                    ]
                 },
-                {
-                    "hour": 2,
-                    "carbon_intensity": 650,
-                }
             ]
         }
     }
@@ -313,3 +339,102 @@ def test_daily_intensity_prediction_for_year_by_month_and_weekday(mocker):
 
     assert expected == api.daily_intensity_prediction_for_year_by_month_and_weekday(
         2030)
+
+
+def test_daily_intensity_by_year(mocker):
+    api = UtilityAPI('tepco')
+
+    def test_daily_intensity_by_year(self):
+        d = {
+            'hour': [1, 2, 3, 4],
+            'year': [2016, 2016, 2017, 2017],
+            'carbon_intensity': [500, 550, 600, 650],
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        test_daily_intensity_by_year
+    )
+
+    expected = {
+        "carbon_intensity_average": {
+            "breakdown": "year",
+            "data": [
+                {
+                    "year": 2016,
+                    "data": [
+                        {
+                            "hour": 1,
+                            "carbon_intensity": 500,
+                        },
+                        {
+                            "hour": 2,
+                            "carbon_intensity": 550,
+                        }
+                    ]
+                },
+                {
+                    "year": 2017,
+                    "data": [
+                        {
+                            "hour": 3,
+                            "carbon_intensity": 600,
+                        },
+                        {
+                            "hour": 4,
+                            "carbon_intensity": 650,
+                        }
+                    ]
+                },
+            ]
+
+
+        }
+    }
+
+    assert expected == api.daily_intensity_by_year()
+
+
+def test_historic_data(mocker):
+    api = UtilityAPI('tepco')
+
+    def test_historic_data(self):
+        d = {
+            'timestamp': [
+                "2020-11-01 00:00:00+00:00",
+                "2020-11-01 01:00:00+00:00",
+                "2020-11-01 02:00:00+00:00",
+                "2020-11-01 03:00:00+00:00"
+            ],
+            'carbon_intensity': [500, 550, 600, 650],
+        }
+        return pd.DataFrame(data=d)
+
+    mocker.patch(
+        'pandas.read_gbq',
+        test_historic_data
+    )
+
+    expected = {
+        "historic": [
+            {
+                "timestamp": "2020-11-01 00:00:00+00:00",
+                "carbon_intensity": 500,
+            },
+            {
+                "timestamp": "2020-11-01 01:00:00+00:00",
+                "carbon_intensity": 550,
+            },
+            {
+                "timestamp": "2020-11-01 02:00:00+00:00",
+                "carbon_intensity": 600,
+            },
+            {
+                "timestamp": "2020-11-01 03:00:00+00:00",
+                "carbon_intensity": 650,
+            },
+        ]
+    }
+
+    assert expected == api.historic_intensity('2020-11-01', '2020-11-02')

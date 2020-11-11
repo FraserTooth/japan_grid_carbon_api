@@ -92,7 +92,7 @@ class OkidenAreaScraper:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
                 return None
-            return data
+            return data.dropna(thresh=8)
 
         print("Reading CSVs")
 
@@ -104,8 +104,7 @@ class OkidenAreaScraper:
         print("Renaming Columns")
         df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
-        print(df.info)
-        print(df.dtypes)
+        df['datetime'] = pd.to_datetime(df['datetime'])
 
         return df
 
