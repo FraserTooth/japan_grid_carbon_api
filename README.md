@@ -101,7 +101,7 @@ gcloud functions logs read
 # Run Locally
 #   First argument, api name
 #   Second argument, environment
-./local.sh api scraping
+./local.sh api staging
 ./local.sh scrapers production
 
 # Run Tests

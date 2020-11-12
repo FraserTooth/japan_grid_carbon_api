@@ -27,7 +27,8 @@ BAD_DATE = 'Invalid Date Provided'
 # Add CORS to All Requests
 headers = {
     'Access-Control-Allow-Origin': '*',
-    'mimetype': 'application/json'
+    'mimetype': 'application/json',
+    'content-type': 'application/json'
 }
 
 
