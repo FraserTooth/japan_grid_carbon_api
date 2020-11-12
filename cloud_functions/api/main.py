@@ -26,7 +26,8 @@ BAD_DATE = 'Invalid Date Provided'
 
 # Add CORS to All Requests
 headers = {
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin': '*',
+    'mimetype': 'application/json'
 }
 
 
@@ -108,7 +109,6 @@ def historical_intensity(utility, fromDate, toDate=None):
     else:
         # Set to fromDate if needed
         toDate = fromDate
-
 
     # Check Cache
     try:
