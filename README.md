@@ -6,6 +6,7 @@ API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid..
 ## API Documentation
 - Staging Docs at [docs-staging.denkicarbon.jp](docs-staging.denkicarbon.jp)
 - Production Docs at [docs.denkicarbon.jp](docs.denkicarbon.jp)
+- Docs also hosted on SwaggerHub at [https://app.swaggerhub.com/apis/FraserTooth/DenkiCarbon/1](https://app.swaggerhub.com/apis/FraserTooth/DenkiCarbon/1)
 
 ## Work so far:
 
@@ -100,7 +101,7 @@ gcloud functions logs read
 # Run Locally
 #   First argument, api name
 #   Second argument, environment
-./local.sh api scraping
+./local.sh api staging
 ./local.sh scrapers production
 
 # Run Tests
