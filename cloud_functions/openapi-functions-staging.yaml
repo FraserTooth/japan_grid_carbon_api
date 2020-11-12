@@ -12,6 +12,7 @@ x-google-backend:
   address: https://us-central1-japan-grid-carbon-api-staging.cloudfunctions.net/api
   protocol: h2
   path_translation: APPEND_PATH_TO_ADDRESS
+  deadline: 30.0
 paths:
   "/v1/carbon_intensity/forecast/{utility}":
     get:
