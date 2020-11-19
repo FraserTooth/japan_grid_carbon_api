@@ -194,6 +194,19 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _query_intensity_forecast(self):
+        query = """
+        SELECT 
+        * 
+        FROM 
+        `japan-grid-carbon-api{bqStageName}.{utility}.intensity_forecast`
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility
+        )
+
+        return pd.read_gbq(query)
+
     def historic_intensity(self, from_date, to_date):
         query = """
         SELECT
@@ -352,7 +365,7 @@ class UtilityAPI:
         return output
 
     def timeseries_prediction(self):
-        df = self._query_timeseries_model()
+        df = self._query_intensity_forecast()
 
         df['forecast_timestamp'] = df['forecast_timestamp'].astype(str)
 

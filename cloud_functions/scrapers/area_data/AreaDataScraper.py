@@ -51,7 +51,7 @@ class AreaDataScraper:
         self._upload_blob_to_storage(df)
         print(" - Sent to Cloud Storage")
 
-        self._insert_into_bigquery(df)
+        self._insert_into_bigquery(df, 'historical_data_by_generation_type')
         print(" - Sent to BigQuery")
 
         print("Creating Timeseries Model")
@@ -76,11 +76,10 @@ class AreaDataScraper:
 
         print('Scraped Data Uploaded to {}.'.format(BLOB_NAME))
 
-    def _insert_into_bigquery(self, df):
+    def _insert_into_bigquery(self, df, table_name):
         BQ_DATASET = self.utility
-        BQ_TABLE = 'historical_data_by_generation_type'
 
-        table_id = BQ_DATASET + "." + BQ_TABLE
+        table_id = BQ_DATASET + "." + table_name
 
         df.to_gbq(table_id, if_exists="replace")
 
@@ -99,7 +98,15 @@ class AreaDataScraper:
         )
 
         api = UtilityAPI()
-        return api.create_timeseries_model()
+        result = api.create_timeseries_model()
+
+        print("Getting ARIMA Timeseries Forecast")
+
+        forecast_df = api._query_timeseries_model()
+
+        print("Sending Forecast To BigQuery")
+
+        self._insert_into_bigquery(forecast_df, 'intensity_forecast')
 
 
 class BigQueryError(Exception):
