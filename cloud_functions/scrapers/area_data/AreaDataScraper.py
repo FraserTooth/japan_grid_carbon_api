@@ -51,7 +51,8 @@ class AreaDataScraper:
         self._upload_blob_to_storage(df)
         print(" - Sent to Cloud Storage")
 
-        self._insert_into_bigquery(df, 'historical_data_by_generation_type')
+        self._insert_into_bigquery(
+            df, 'historical_data_by_generation_type', 'replace')
         print(" - Sent to BigQuery")
 
         print("Creating Timeseries Model")
@@ -76,12 +77,12 @@ class AreaDataScraper:
 
         print('Scraped Data Uploaded to {}.'.format(BLOB_NAME))
 
-    def _insert_into_bigquery(self, df, table_name):
+    def _insert_into_bigquery(self, df, table_name, insertiontype):
         BQ_DATASET = self.utility
 
         table_id = BQ_DATASET + "." + table_name
 
-        df.to_gbq(table_id, if_exists="replace")
+        df.to_gbq(table_id, if_exists=insertiontype)
 
     def _create_timeseries_model(self):
 
@@ -106,7 +107,7 @@ class AreaDataScraper:
 
         print("Sending Forecast To BigQuery")
 
-        self._insert_into_bigquery(forecast_df, 'intensity_forecast')
+        self._insert_into_bigquery(forecast_df, 'intensity_forecast', 'append')
 
 
 class BigQueryError(Exception):
