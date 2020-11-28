@@ -104,6 +104,7 @@ class AreaDataScraper:
         print("Getting ARIMA Timeseries Forecast")
 
         forecast_df = api._query_timeseries_model()
+        forecast_df['date_created'] = datetime.now()
 
         print("Sending Forecast To BigQuery")
 
