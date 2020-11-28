@@ -8,11 +8,25 @@ stage = os.environ['STAGE']
 HORIZON = 2500
 # Bit more than than 3 months of hours (24h * 31d * 3m = 2322)
 
+# https://criepi.denken.or.jp/jp/kenkikaku/report/detail/Y06.html
+national_lifecycle_carbon_intensities_by_source = {
+    "coal": 943,
+    "oil": 738,
+    "lng": 474,
+    "nuclear": 19,
+    "hydro": 11,
+    "geothermal": 13,
+    "solar": 59,
+    "wind": 26,
+    "biomass": 120  # Still use the UK factor
+}
+
 
 class UtilityAPI:
     def __init__(self, utility):
         self.utility = utility
         self.bqStageName = "" if stage == "production" else "-staging"
+        self.intensity_factors = national_lifecycle_carbon_intensities_by_source
 
     def _get_intensity_query_string(self):
         query_string = """
@@ -420,33 +434,25 @@ class UtilityAPI:
         return "Success"
 
     # Likely to be Overwritten
-
     def get_carbon_intensity_factors(self):
-        # Get And Calculate Carbon Intensity
-        print("Grabbing Intensities")
-        response = requests.get(
-            "https://api.carbonintensity.org.uk/intensity/factors")
-
-        # Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
         fossilFuelStations = {
-            "lng": 4.38 + 3.6 + 3.6 + 5.16 + 3.42 + 3.541 + 1.15 + 2 + 1.14,
-            "oil": 5.66 + 1.05 + 4.40,
-            "coal": 2
+            "lng": 1,
+            "oil": 1,
+            "coal": 1
         }
         totalFossil = fossilFuelStations["lng"] + \
             fossilFuelStations["oil"] + fossilFuelStations["coal"]
 
-        json = response.json()
-        factors = json["data"][0]
+        factors = self.intensity_factors
 
         return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": 0,  # Probably
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
+            "kWh_nuclear": factors["nuclear"],
+            "kWh_fossil": (factors["coal"] * fossilFuelStations["coal"] + factors["oil"] * fossilFuelStations["oil"] + factors["lng"] * fossilFuelStations["lng"]) / totalFossil,
+            "kWh_hydro": factors["hydro"],
+            "kWh_geothermal": factors["geothermal"],
+            "kWh_biomass": factors["biomass"],
+            "kWh_solar_output": factors["solar"],
+            "kWh_wind_output": factors["wind"],
             # Not always charged when renewables available, average of this
             "kWh_pumped_storage": 80.07,
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though

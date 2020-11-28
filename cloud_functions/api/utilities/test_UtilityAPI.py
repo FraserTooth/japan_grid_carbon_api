@@ -6,46 +6,19 @@ import gc
 import pandas as pd
 from .UtilityAPI import UtilityAPI
 
-uk_carbon_intensity_response = json.dumps({
-    "data": [
-        {
-            "Biomass": 120,
-            "Coal": 937,
-            "Dutch Imports": 474,
-            "French Imports": 53,
-            "Gas (Combined Cycle)": 394,
-            "Gas (Open Cycle)": 651,
-            "Hydro": 0,
-            "Irish Imports": 458,
-            "Nuclear": 0,
-            "Oil": 935,
-            "Other": 300,
-            "Pumped Storage": 0,
-            "Solar": 0,
-            "Wind": 0
-        }
-    ]
-})
-
-
-@pytest.fixture(autouse=True)
-def before_each(requests_mock):
-    requests_mock.get(
-        "https://api.carbonintensity.org.uk/intensity/factors", text=uk_carbon_intensity_response)
-
 
 def test_get_carbon_intensity_factors():
 
     api = UtilityAPI('tepco')
 
     expected = {
-        "kWh_nuclear": 0,
-        "kWh_fossil": 741.68489817766,
-        "kWh_hydro": 0,
-        "kWh_geothermal": 0,
+        "kWh_nuclear": 19,
+        "kWh_fossil": 718.3333333333334,
+        "kWh_hydro": 11,
+        "kWh_geothermal": 13,
         "kWh_biomass": 120,
-        "kWh_solar_output": 0,
-        "kWh_wind_output": 0,
+        "kWh_solar_output": 59,
+        "kWh_wind_output": 26,
         "kWh_pumped_storage": 80.07,
         # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
         "kWh_interconnectors": 500
@@ -61,13 +34,13 @@ def test_gbq_query_string():
         AVG(
             
         (
-            (daMWh_nuclear * 0) +
-            (daMWh_fossil * 741.68489817766) +
-            (daMWh_hydro * 0) +
-            (daMWh_geothermal * 0) +
+            (daMWh_nuclear * 19) +
+            (daMWh_fossil * 718.3333333333334) +
+            (daMWh_hydro * 11) +
+            (daMWh_geothermal * 13) +
             (daMWh_biomass * 120) +
-            (daMWh_solar_output * 0) +
-            (daMWh_wind_output * 0) +
+            (daMWh_solar_output * 59) +
+            (daMWh_wind_output * 26) +
             (daMWh_pumped_storage_contribution * 80.07) +
             (daMWh_interconnector_contribution * 500)
         ) / daMWh_total_generation
