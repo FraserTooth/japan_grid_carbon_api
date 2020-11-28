@@ -191,6 +191,9 @@ definitions:
       confidence_interval_upper_bound:
         type: number
         example: 668.30870439277
+      date_created:
+        type: string
+        example: "2020-10-01 00:00:00+00:00"
 
   carbonIntensity:
     type: object
