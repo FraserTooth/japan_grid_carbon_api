@@ -58,6 +58,11 @@ cache = {
 }
 
 
+def clearCache(utility):
+    # Mainly Used for the Test Framework
+    cache[utility] = {}
+
+
 def selectUtility(utility):
     utilities = {
         "tepco": TepcoAPI(),
@@ -111,10 +116,6 @@ def validateDates(fromDate, toDate):
     return {
         "valid": True
     }
-
-
-def clearCache(utility):
-    cache[utility] = {}
 
 
 def api(request):
