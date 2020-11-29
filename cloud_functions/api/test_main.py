@@ -210,6 +210,30 @@ def test_carbon_intensity_timeseries_prediction_bad_utility():
     assert code == 400
 
 
+def test_carbon_intensity_timeseries_prediction_bad_date_from():
+    message, code, cors = carbon_intensity_timeseries_prediction(
+        "tepco", "fish")
+    assert message == generate_standard_error_model(
+        'Invalid FROM Date Provided', 400)
+    assert code == 400
+
+
+def test_carbon_intensity_timeseries_prediction_bad_date_to():
+    message, code, cors = carbon_intensity_timeseries_prediction(
+        "tepco", "2020-01-02", "fish")
+    assert message == generate_standard_error_model(
+        'Invalid TO Date Provided', 400)
+    assert code == 400
+
+
+def test_carbon_intensity_timeseries_prediction_to_before_from():
+    message, code, cors = carbon_intensity_timeseries_prediction(
+        "tepco", "2020-01-02", "2020-01-01")
+    assert message == generate_standard_error_model(
+        'Invalid Query - TO Date before FROM Date', 400)
+    assert code == 400
+
+
 def test_carbon_intensity_timeseries_prediction_response(mocker):
 
     mocker.patch(
@@ -255,7 +279,7 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
     assert body2 == json.dumps(expectedData2)
 
 
-# Carbon Intensity Historic Prediction
+# Carbon Intensity Historic Intensities
 
 
 def test_carbon_intensity_historical_bad_utility():

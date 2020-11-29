@@ -95,7 +95,7 @@ def validateDates(fromDate, toDate):
     TO_BEFORE_FROM = {
         "valid": False,
         "response": generate_standard_error_model(
-            '"TO" Date before "FROM" Date', 400
+            'Invalid Query - TO Date before FROM Date', 400
         )
     }
 
