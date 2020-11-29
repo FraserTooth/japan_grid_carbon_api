@@ -9,6 +9,7 @@ from .main import (daily_carbon_intensity,
                    daily_carbon_intensity_prediction,
                    carbon_intensity_timeseries_prediction,
                    clearCache,
+                   generate_standard_error_model,
                    historical_intensity)
 
 
@@ -24,7 +25,8 @@ def before_each():
 def test_daily_carbon_intensity_bad_utility():
     message, code, cors = daily_carbon_intensity(
         "fish")
-    assert message == 'Invalid Utility Specified'
+    assert message == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
     assert code == 400
 
 
@@ -76,14 +78,16 @@ def test_daily_carbon_intensity_cache(mocker):
 def test_daily_carbon_intensity_with_breakdown_bad_utility():
     message, code, cors = daily_carbon_intensity_with_breakdown(
         "fish", "breakdown")
-    assert message == 'Invalid Utility Specified'
+    assert message == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
     assert code == 400
 
 
 def test_daily_carbon_intensity_with_breakdown_bad_breakdown():
     message, code, cors = daily_carbon_intensity_with_breakdown(
         "tepco", "fish")
-    assert message == 'Invalid Breakdown Specified'
+    assert message == generate_standard_error_model(
+        'Invalid Breakdown Specified', 400)
     assert code == 400
 
 
@@ -138,14 +142,16 @@ def test_daily_carbon_intensity_with_breakdown_cache(mocker):
 def test_daily_carbon_intensity_predictions_bad_utility():
     message, code, cors = daily_carbon_intensity_prediction(
         "fish", 2030)
-    assert message == 'Invalid Utility Specified'
+    assert message == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
     assert code == 400
 
 
 def test_daily_carbon_intensity_predictions_bad_year():
     message, code, cors = daily_carbon_intensity_prediction(
         "tepco", 2000)
-    assert message == 'Invalid Year Specified - must be between this year and 50 from now'
+    assert message == generate_standard_error_model(
+        'Invalid Year Specified - must be between this year and 50 from now', 400)
     assert code == 400
 
 
@@ -198,8 +204,9 @@ def test_daily_carbon_intensity_predictions_cache(mocker):
 
 def test_carbon_intensity_timeseries_prediction_bad_utility():
     message, code, cors = carbon_intensity_timeseries_prediction(
-        "fish")
-    assert message == 'Invalid Utility Specified'
+        "fish", "2020-01-01")
+    assert message == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
     assert code == 400
 
 
@@ -211,7 +218,7 @@ def test_carbon_intensity_timeseries_prediction_response(mocker):
     )
 
     body, code, cors = carbon_intensity_timeseries_prediction(
-        "tepco")
+        "tepco", "2020-01-01")
 
     expectedData = {
         "data": "xyz",
@@ -230,9 +237,9 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
     )
 
     body1, code1, cors1 = carbon_intensity_timeseries_prediction(
-        "tepco")
+        "tepco", "2020-01-01")
     body2, code2, cors2 = carbon_intensity_timeseries_prediction(
-        "tepco")
+        "tepco", "2020-01-01")
 
     expectedData1 = {
         "data": "xyz",
@@ -254,21 +261,24 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
 def test_carbon_intensity_historical_bad_utility():
     message, code, cors = historical_intensity(
         "fish", "2020-01-02", "2020-02-02")
-    assert message == 'Invalid Utility Specified'
+    assert message == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
     assert code == 400
 
 
 def test_carbon_intensity_historical_bad_date_from():
     message, code, cors = historical_intensity(
         "tepco", "fish")
-    assert message == 'Invalid Date Provided'
+    assert message == generate_standard_error_model(
+        'Invalid FROM Date Provided', 400)
     assert code == 400
 
 
 def test_carbon_intensity_historical_bad_date_to():
     message, code, cors = historical_intensity(
         "tepco", "2020-01-02", "fish")
-    assert message == 'Invalid Date Provided'
+    assert message == generate_standard_error_model(
+        'Invalid TO Date Provided', 400)
     assert code == 400
 
 

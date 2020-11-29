@@ -30,6 +30,10 @@ def generate_standard_error_model(message, code):
 
 # Standard Response Messages for Errors
 BAD_UTILITY = generate_standard_error_model('Invalid Utility Specified', 400)
+BAD_BREAKDOWN = generate_standard_error_model(
+    'Invalid Breakdown Specified', 400)
+BAD_YEAR = generate_standard_error_model(
+    'Invalid Year Specified - must be between this year and 50 from now', 400)
 
 
 # Add CORS to All Requests
@@ -108,9 +112,9 @@ def validateDates(fromDate, toDate):
         except Exception as e:
             return BAD_TO_DATE_FORMAT
 
-    # Check Order of Dates
-    if(datetimeTo < datetimeFrom):
-        return TO_BEFORE_FROM
+        # Check Order of Dates
+        if(datetimeTo < datetimeFrom):
+            return TO_BEFORE_FROM
     return {
         "valid": True
     }
@@ -224,7 +228,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     }
     dataSource = breakdowns.get(breakdown, None)
     if dataSource == None:
-        return f'Invalid Breakdown Specified', 400, headers
+        return BAD_BREAKDOWN, 400, headers
 
     # Check Cache
     if breakdown in cache[utility]:
@@ -254,7 +258,7 @@ def daily_carbon_intensity_prediction(utility, year):
 
     # Check Breakdown Type
     if int(year) < now.year or int(year) > (now.year + 50):
-        return f'Invalid Year Specified - must be between this year and 50 from now', 400, headers
+        return BAD_YEAR, 400, headers
 
     print("Fetching Prediction - " + utility +
           " predicted intensity for " + str(year) + ":")
