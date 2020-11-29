@@ -1,10 +1,21 @@
 import requests
 from ..UtilityAPI import UtilityAPI
 
+config_kyuden = {
+    "pumped_storage_factor": 8.57,
+
+    # Thermal Data: https://www.kyuden.co.jp/var/rev0/0220/1476/c57wp8gc_16.pdf
+    "fuel_type_totals": {
+        "lng": 1.8 + 2.825,
+        "oil": 1 + 0.875 + 1,
+        "coal": 0.36 + 0.7 + 1.4
+    }
+}
+
 
 class KyudenAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("kyuden")
+        super().__init__("kyuden", config_kyuden)
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -47,37 +58,3 @@ class KyudenAPI(UtilityAPI):
             intensity_pumped_storage=ci["kWh_pumped_storage"],
             intensity_interconnectors=ci["kWh_interconnectors"]
         )
-
-    def get_carbon_intensity_factors(self):
-        # Get And Calculate Carbon Intensity
-        print("Grabbing Intensities")
-        response = requests.get(
-            "https://api.carbonintensity.org.uk/intensity/factors")
-
-        # Thermal Data: https://www.kyuden.co.jp/var/rev0/0220/1476/c57wp8gc_16.pdf
-        fossilFuelStations = {
-            "lng": 1.8 + 2.825,
-            "oil": 1 + 0.875 + 1,
-            "coal": 0.36 + 0.7 + 1.4
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        json = response.json()
-        factors = json["data"][0]
-
-        print("Resolving Intensities for Kyuden")
-
-        return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": 0,  # Probably
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
-            # Not always charged when renewables available, average of this
-            "kWh_pumped_storage": 8.57,
-            # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 500
-        }

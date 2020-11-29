@@ -6,10 +6,19 @@ import gc
 import pandas as pd
 from .UtilityAPI import UtilityAPI
 
+test_config = {
+    "pumped_storage_factor": 80.07,
+    "fuel_type_totals": {
+        "lng": 1,
+        "oil": 1,
+        "coal": 1
+    }
+}
+
 
 def test_get_carbon_intensity_factors():
 
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     expected = {
         "kWh_nuclear": 19,
@@ -28,7 +37,7 @@ def test_get_carbon_intensity_factors():
 
 
 def test_gbq_query_string():
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     expected = """
         AVG(
@@ -64,7 +73,7 @@ def test_gbq_query_string():
 
 
 def test_daily_intensity(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def mock_daily_intensity(self):
         d = {'hour': [1, 2], 'carbon_intensity': [500, 550]}
@@ -95,7 +104,7 @@ def test_daily_intensity(mocker):
 
 
 def test_daily_intensity_by_month(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def mock_daily_intensity_by_month(self):
         d = {
@@ -148,7 +157,7 @@ def test_daily_intensity_by_month(mocker):
 
 
 def test_daily_intensity_by_month_and_weekday(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def mock_daily_intensity_by_month_and_weekday(self):
         d = {
@@ -201,7 +210,7 @@ def test_daily_intensity_by_month_and_weekday(mocker):
 
 
 def test_daily_intensity_by_year_month_and_weekday(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def test_daily_intensity_by_year_month_and_weekday(self):
         d = {
@@ -259,7 +268,7 @@ def test_daily_intensity_by_year_month_and_weekday(mocker):
 
 
 def test_daily_intensity_prediction_for_year_by_month_and_weekday(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def mock_daily_intensity_prediction_for_year_by_month_and_weekday(self):
         d = {
@@ -315,7 +324,7 @@ def test_daily_intensity_prediction_for_year_by_month_and_weekday(mocker):
 
 
 def test_daily_intensity_by_year(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def test_daily_intensity_by_year(self):
         d = {
@@ -370,7 +379,7 @@ def test_daily_intensity_by_year(mocker):
 
 
 def test_historic_data(mocker):
-    api = UtilityAPI('tepco')
+    api = UtilityAPI('tepco', test_config)
 
     def test_historic_data(self):
         d = {

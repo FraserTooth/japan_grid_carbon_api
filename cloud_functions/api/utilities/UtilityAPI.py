@@ -23,10 +23,10 @@ national_lifecycle_carbon_intensities_by_source = {
 
 
 class UtilityAPI:
-    def __init__(self, utility):
+    def __init__(self, utility, config):
         self.utility = utility
         self.bqStageName = "" if stage == "production" else "-staging"
-        self.intensity_factors = national_lifecycle_carbon_intensities_by_source
+        self.config = config
 
     def _get_intensity_query_string(self):
         query_string = """
@@ -433,28 +433,23 @@ class UtilityAPI:
 
         return "Success"
 
-    # Likely to be Overwritten
     def get_carbon_intensity_factors(self):
-        fossilFuelStations = {
-            "lng": 1,
-            "oil": 1,
-            "coal": 1
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
+        stations = self.config["fuel_type_totals"]
+        totalFossil = stations["lng"] + \
+            stations["oil"] + stations["coal"]
 
-        factors = self.intensity_factors
+        factors = national_lifecycle_carbon_intensities_by_source
 
         return {
             "kWh_nuclear": factors["nuclear"],
-            "kWh_fossil": (factors["coal"] * fossilFuelStations["coal"] + factors["oil"] * fossilFuelStations["oil"] + factors["lng"] * fossilFuelStations["lng"]) / totalFossil,
+            "kWh_fossil": (factors["coal"] * stations["coal"] + factors["oil"] * stations["oil"] + factors["lng"] * stations["lng"]) / totalFossil,
             "kWh_hydro": factors["hydro"],
             "kWh_geothermal": factors["geothermal"],
             "kWh_biomass": factors["biomass"],
             "kWh_solar_output": factors["solar"],
             "kWh_wind_output": factors["wind"],
             # Not always charged when renewables available, average of this
-            "kWh_pumped_storage": 80.07,
+            "kWh_pumped_storage": self.config["pumped_storage_factor"],
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }

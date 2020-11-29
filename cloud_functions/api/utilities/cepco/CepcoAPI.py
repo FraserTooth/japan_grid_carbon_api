@@ -1,10 +1,21 @@
 import requests
 from ..UtilityAPI import UtilityAPI
 
+config_cepco = {
+    "pumped_storage_factor": 19.75,
+
+    # Thermal Energy Percentages: https://www.energia.co.jp/corp/active/csr/kankyou/pdf/2019/csr-2019.pdf
+    "fuel_type_totals": {
+        "lng": 0.285 + 1.4,
+        "oil": 0.35 + 0.35 + 0.50 + 0.35 + 0.5 + 0.7 + 0.4,
+        "coal": 1 + 0.156 + 0.259 + 0.5 + 0.5 + 0.175
+    }
+}
+
 
 class CepcoAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("cepco")
+        super().__init__("cepco", config_cepco)
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -47,46 +58,3 @@ class CepcoAPI(UtilityAPI):
             intensity_pumped_storage=ci["kWh_pumped_storage"],
             intensity_interconnectors=ci["kWh_interconnectors"]
         )
-
-    def get_carbon_intensity_factors(self):
-
-        # Thermal Energy Percentages: https://www.energia.co.jp/corp/active/csr/kankyou/pdf/2019/csr-2019.pdf
-        # Numbers represent the proportions of energy use
-        fossilFuelStations = {
-            "lng": 0.285 + 1.4,
-            "oil": 0.35 + 0.35 + 0.50 + 0.35 + 0.5 + 0.7 + 0.4,
-            "coal": 1 + 0.156 + 0.259 + 0.5 + 0.5 + 0.175
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        # CEPCO Has factors in its info - "For Japan" - Page 9
-        factors = {
-            "Nuclear": 19,
-            "Hydro": 11,
-            "Wind": 26,
-            "Solar": 38,
-            "Gas (Open Cycle)": 599,
-            "Gas (Combined Cycle)": 474,
-            "Oil": 738,
-            "Coal": 943,
-            "Geothermal": 13,
-            # From UK - Not in PDF
-            "Biomass": 120,
-        }
-
-        print("Resolving Intensities for Cepco")
-
-        return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": factors["Geothermal"],
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
-            # Not always charged when renewables available, average of this
-            "kWh_pumped_storage": 19.75,
-            # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 500
-        }

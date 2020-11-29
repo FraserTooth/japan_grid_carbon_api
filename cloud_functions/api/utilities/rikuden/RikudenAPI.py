@@ -2,9 +2,21 @@ import requests
 from ..UtilityAPI import UtilityAPI
 
 
+config_rikuden = {
+    "pumped_storage_factor": 80.07,
+
+    # Thermal Energy Percentages:http://www.rikuden.co.jp/eng_ir/attach/integratedreport2019-1.pdf
+    "fuel_type_totals": {
+        "lng": 0.4247,
+        "oil": 0.25 + 0.5 + 0.5,
+        "coal": 0.5 + 0.7 + 0.25 + 0.5 + 0.7 + 0.25 + 0.25
+    }
+}
+
+
 class RikudenAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("rikuden")
+        super().__init__("rikuden", config_rikuden)
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -47,38 +59,3 @@ class RikudenAPI(UtilityAPI):
             intensity_pumped_storage=ci["kWh_pumped_storage"],
             intensity_interconnectors=ci["kWh_interconnectors"]
         )
-
-    def get_carbon_intensity_factors(self):
-        # Get And Calculate Carbon Intensity
-        print("Grabbing Intensities")
-        response = requests.get(
-            "https://api.carbonintensity.org.uk/intensity/factors")
-
-        # Thermal Energy Percentages:http://www.rikuden.co.jp/eng_ir/attach/integratedreport2019-1.pdf
-        # Numbers represent the proportions of energy use
-        fossilFuelStations = {
-            "lng": 0.4247,
-            "oil": 0.25 + 0.5 + 0.5,
-            "coal": 0.5 + 0.7 + 0.25 + 0.5 + 0.7 + 0.25 + 0.25
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        json = response.json()
-        factors = json["data"][0]
-
-        print("Resolving Intensities for Rikuden")
-
-        return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": 0,  # Probably
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
-            # Appears to always get charge when renewables available
-            "kWh_pumped_storage": 0,
-            # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 500
-        }
