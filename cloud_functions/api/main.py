@@ -74,13 +74,6 @@ def selectUtility(utility):
     return utilities.get(utility, None)
 
 
-def isValidDatePattern(dateString):
-    # YYYY-MM-DD, potentially valid date
-    regex = r"^20[12]\d-[01]\d-[0-3]\d$"
-    isValidPattern = bool(re.match(regex, dateString))
-    return isValidPattern
-
-
 def validateDates(fromDate, toDate):
     BAD_FROM_DATE_FORMAT = {
         "valid": False,
