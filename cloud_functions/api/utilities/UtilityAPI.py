@@ -208,7 +208,7 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
-    def _query_intensity_forecast(self):
+    def _query_intensity_forecast(self, from_date, to_date):
         # Self Join on Table to return the most recently dated intensity forecast
         query = """
         SELECT 
@@ -221,9 +221,13 @@ class UtilityAPI:
             FROM `japan-grid-carbon-api{bqStageName}.{utility}.intensity_forecast`
             GROUP BY forecast_timestamp
         ) b ON a.forecast_timestamp = b.forecast_timestamp AND a.date_created = b.most_recent_forecast_date
+        WHERE EXTRACT(DATE from a.forecast_timestamp) BETWEEN DATE("{from_date}") and DATE("{to_date}")
+        order by a.forecast_timestamp
         """.format(
             bqStageName=self.bqStageName,
-            utility=self.utility
+            utility=self.utility,
+            from_date=from_date,
+            to_date=to_date
         )
 
         return pd.read_gbq(query)
@@ -385,8 +389,8 @@ class UtilityAPI:
 
         return output
 
-    def timeseries_prediction(self):
-        df = self._query_intensity_forecast()
+    def timeseries_prediction(self, from_date, to_date):
+        df = self._query_intensity_forecast(from_date, to_date)
 
         df['forecast_timestamp'] = df['forecast_timestamp'].astype(str)
         df['date_created'] = df['date_created'].astype(str)

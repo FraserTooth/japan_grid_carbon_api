@@ -2,9 +2,9 @@ import json
 import copy
 import werkzeug.datastructures
 from flask import Flask
-import datetime
+from datetime import datetime
 import re
-now = datetime.datetime.now()
+now = datetime.now()
 app = Flask(__name__)
 
 from pprint import pprint
@@ -20,9 +20,17 @@ from .utilities.yonden.YondenAPI import YondenAPI
 from .utilities.kyuden.KyudenAPI import KyudenAPI
 from .utilities.okiden.OkidenAPI import OkidenAPI
 
+
+def generate_standard_error_model(message, code):
+    return json.dumps({
+        "message": message,
+        "code": code
+    })
+
+
 # Standard Response Messages for Errors
-BAD_UTILITY = 'Invalid Utility Specified'
-BAD_DATE = 'Invalid Date Provided'
+BAD_UTILITY = generate_standard_error_model('Invalid Utility Specified', 400)
+
 
 # Add CORS to All Requests
 headers = {
@@ -62,11 +70,50 @@ def selectUtility(utility):
     return utilities.get(utility, None)
 
 
-def isValidDate(dateString):
+def isValidDatePattern(dateString):
     # YYYY-MM-DD, potentially valid date
     regex = r"^20[12]\d-[01]\d-[0-3]\d$"
     isValidPattern = bool(re.match(regex, dateString))
     return isValidPattern
+
+
+def validateDates(fromDate, toDate):
+    BAD_FROM_DATE_FORMAT = {
+        "valid": False,
+        "response": generate_standard_error_model(
+            'Invalid FROM Date Provided', 400)
+    }
+    BAD_TO_DATE_FORMAT = {
+        "valid": False,
+        "response": generate_standard_error_model(
+            'Invalid TO Date Provided', 400)
+    }
+    TO_BEFORE_FROM = {
+        "valid": False,
+        "response": generate_standard_error_model(
+            '"TO" Date before "FROM" Date', 400
+        )
+    }
+
+    # Check fromDate
+    try:
+        datetimeFrom = datetime.strptime(fromDate, '%Y-%m-%d')
+    except Exception as e:
+        return BAD_FROM_DATE_FORMAT
+
+    # Check toDate (optional)
+    if (toDate != None):
+        try:
+            datetimeTo = datetime.strptime(toDate, '%Y-%m-%d')
+        except Exception as e:
+            return BAD_TO_DATE_FORMAT
+
+    # Check Order of Dates
+    if(datetimeTo < datetimeFrom):
+        return TO_BEFORE_FROM
+    return {
+        "valid": True
+    }
 
 
 def clearCache(utility):
@@ -99,16 +146,11 @@ def historical_intensity(utility, fromDate, toDate=None):
     if utilityClass == None:
         return BAD_UTILITY, 400, headers
 
-    # Check fromDate
-    if not isValidDate(fromDate):
-        return BAD_DATE, 400, headers
+    datesValid = validateDates(fromDate, toDate)
+    if(datesValid["valid"] == False):
+        return datesValid["response"], 400, headers
 
-    # Check toDate (optional)
-    if (toDate != None):
-        if not isValidDate(toDate):
-            return BAD_DATE, 400, headers
-    else:
-        # Set to fromDate if needed
+    if(toDate == None):
         toDate = fromDate
 
     # Check Cache
@@ -233,28 +275,48 @@ def daily_carbon_intensity_prediction(utility, year):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v1/carbon_intensity/forecast/<utility>')
-def carbon_intensity_timeseries_prediction(utility):
+@app.route('/v1/carbon_intensity/forecast/<utility>/<fromDate>', defaults={'toDate': None})
+@app.route('/v1/carbon_intensity/forecast/<utility>/<fromDate>/<toDate>')
+def carbon_intensity_timeseries_prediction(utility, fromDate, toDate=None):
     response = {}
 
+    # Check Utility
     utilityClass = selectUtility(utility)
-
-    # Sense Check Utiltity
     if utilityClass == None:
         return BAD_UTILITY, 400, headers
+
+    datesValid = validateDates(fromDate, toDate)
+    if(datesValid["valid"] == False):
+        return datesValid["response"], 400, headers
+
+    if(toDate == None):
+        toDate = fromDate
 
     print("Fetching Prediction - " + utility + ":")
 
     # Check Cache
-    if 'prediction' in cache[utility]:
-        print("Returning cache...")
-        return json.dumps(cache[utility]['prediction']), 200, headers
+    try:
+        if toDate in cache[utility]["prediction"][fromDate]:
+            print("Returning cache. " + utility +
+                  " prediction " + fromDate + "-" + toDate + ":")
+            return json.dumps(cache[utility]["prediction"][fromDate][toDate]), 200, headers
+    except KeyError:
+        print("Not in Cache: " + utility +
+              " prediction " + fromDate + "-" + toDate)
 
-    response['data'] = utilityClass.timeseries_prediction()
+    response['data'] = utilityClass.timeseries_prediction(fromDate, toDate)
     response['fromCache'] = True
 
     # Populate Cache
-    cache[utility]['prediction'] = copy.deepcopy(response)
+    if not "prediction" in cache[utility]:
+        cache[utility]["prediction"] = {}
+    if not fromDate in cache[utility]["prediction"]:
+        cache[utility]["prediction"][fromDate] = {}
+    if not toDate in cache[utility]["prediction"][fromDate]:
+        cache[utility]["prediction"][fromDate][toDate] = {}
+
+    cache[utility]["prediction"][fromDate][toDate] = copy.deepcopy(
+        response)
     response["fromCache"] = False
 
     return json.dumps(response), 200, headers
