@@ -14,15 +14,16 @@ x-google-backend:
   path_translation: APPEND_PATH_TO_ADDRESS
   deadline: 30.0
 paths:
-  "/v1/carbon_intensity/forecast/{utility}":
+  "/v1/carbon_intensity/forecast/{utility}/{from}":
     get:
-      summary: Get Forcast Predictions for Carbon Intensity for a given utility
-      operationId: carbon_intensity_prediction
+      summary: Get Forcast Predictions for Carbon Intensity for a given utility on the provided day
+      operationId: carbon_intensity_prediction_day
       parameters:
         - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
       responses:
         "200":
-          description: Forcast for 2500 hours ahead of the previously available data
+          description: Forecast for the requested date
           schema:
             type: object
             properties:
@@ -35,8 +36,38 @@ paths:
                       $ref: "#/definitions/carbonIntensityForecast"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
+
+  "/v1/carbon_intensity/forecast/{utility}/{from}/{to}":
+    get:
+      summary: Get Forcast Predictions for Carbon Intensity for a given utility between the provided days
+      operationId: carbon_intensity_prediction_days
+      parameters:
+        - $ref: "#/parameters/utility"
+        - $ref: "#/parameters/fromDate"
+        - $ref: "#/parameters/toDate"
+      responses:
+        "200":
+          description: Forecast for the requested date
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  forecast:
+                    type: array
+                    items:
+                      $ref: "#/definitions/carbonIntensityForecast"
+              fromCache:
+                type: boolean
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
   "/v1/carbon_intensity/average/{utility}":
     get:
@@ -65,8 +96,10 @@ paths:
                           $ref: "#/definitions/averageCarbonIntensityForDay"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
   "/v1/carbon_intensity/average/year/{utility}":
     get:
@@ -87,8 +120,10 @@ paths:
                     $ref: "#/definitions/averageBreakdownYear"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
   "/v1/carbon_intensity/average/month/{utility}":
     get:
@@ -109,8 +144,10 @@ paths:
                     $ref: "#/definitions/averageBreakdownMonth"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
   "/v1/carbon_intensity/historic/{utility}/{from}":
     get:
@@ -134,8 +171,10 @@ paths:
                       $ref: "#/definitions/carbonIntensity"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
   "/v1/carbon_intensity/historic/{utility}/{from}/{to}":
     get:
@@ -160,8 +199,10 @@ paths:
                       $ref: "#/definitions/carbonIntensity"
               fromCache:
                 type: boolean
-        "400":
-          description: Invalid Utility Specified
+        default:
+          description: "error payload"
+          schema:
+            $ref: "#/definitions/ErrorModel"
 
 definitions:
   carbonIntensityForecast:
@@ -256,6 +297,19 @@ definitions:
               type: array
               items:
                 $ref: "#/definitions/averageCarbonIntensityForDay"
+
+  ErrorModel:
+    type: object
+    required:
+      - message
+      - code
+    properties:
+      message:
+        type: string
+      code:
+        type: integer
+        minimum: 100
+        maximum: 600
 
 parameters:
   utility:
