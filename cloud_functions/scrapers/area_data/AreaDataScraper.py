@@ -5,7 +5,6 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 from pydoc import locate
-import signal
 
 stage = os.environ['STAGE']
 
@@ -37,24 +36,13 @@ def selectUtility(utility):
     return utilities.get(utility, None)
 
 
-def handler(signum, frame):
-    raise IOError("Scraping took too long...retry")
-
-
-signal.signal(signal.SIGALRM, handler)
-
-
 class AreaDataScraper:
     def __init__(self, utility):
         self.utility = utility
         self.scraper = selectUtility(utility)
 
     def get_dataframe(self):
-        # Allow 60 seconds for scraping process
-        signal.alarm(60)
         result = self.scraper._parseCsvs()
-        # End Timer
-        signal.alarm(0)
         return result
 
     def scrape(self):
