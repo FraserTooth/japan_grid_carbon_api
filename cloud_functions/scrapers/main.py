@@ -4,7 +4,7 @@ import werkzeug.datastructures
 from flask import Flask
 app = Flask(__name__)
 
-from scrapers.area_data.AreaDataScraper import AreaDataScraper
+from .area_data.AreaDataScraper import AreaDataScraper
 
 
 headers = {}
@@ -44,6 +44,44 @@ def area_data(utility):
         "result": "success",
         "rows": numRows,
         "utility": utility
+    }
+
+    return json.dumps(response), 200, headers
+
+
+@app.route('/area_data/all')
+def area_data_all():
+    # Only for local runs - takes too long for cloud functions
+    response = {}
+
+    s = [
+        AreaDataScraper("cepco"),
+        AreaDataScraper("chuden"),
+        AreaDataScraper("hepco"),
+        AreaDataScraper("kepco"),
+        AreaDataScraper("kyuden"),
+        AreaDataScraper("okiden"),
+        AreaDataScraper("rikuden"),
+        AreaDataScraper("tepco"),
+        AreaDataScraper("tohokuden"),
+        AreaDataScraper("yonden"),
+    ]
+
+    results = []
+
+    for scraper in s:
+        numRows = scraper.scrape()
+        utility = scraper.utility
+
+        results.append({
+            "numRows": numRows,
+            "utility": utility
+        })
+
+    response = {
+        "result": "success",
+        "rows": json.dumps(results),
+
     }
 
     return json.dumps(response), 200, headers

@@ -5,19 +5,20 @@ from google.cloud import storage
 from google.cloud import bigquery
 from google.api_core import retry
 from pydoc import locate
+import signal
 
 stage = os.environ['STAGE']
 
-from scrapers.area_data.utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
-from scrapers.area_data.utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
-from scrapers.area_data.utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
-from scrapers.area_data.utilities.chuden.ChudenAreaScraper import ChudenAreaScraper
-from scrapers.area_data.utilities.hepco.HepcoAreaScraper import HepcoAreaScraper
-from scrapers.area_data.utilities.rikuden.RikudenAreaScraper import RikudenAreaScraper
-from scrapers.area_data.utilities.cepco.CepcoAreaScraper import CepcoAreaScraper
-from scrapers.area_data.utilities.yonden.YondenAreaScraper import YondenAreaScraper
-from scrapers.area_data.utilities.kyuden.KyudenAreaScraper import KyudenAreaScraper
-from scrapers.area_data.utilities.okiden.OkidenAreaScraper import OkidenAreaScraper
+from .utilities.tepco.TepcoAreaScraper import TepcoAreaScraper
+from .utilities.kepco.KepcoAreaScraper import KepcoAreaScraper
+from .utilities.tohokuden.TohokudenAreaScraper import TohokudenAreaScraper
+from .utilities.chuden.ChudenAreaScraper import ChudenAreaScraper
+from .utilities.hepco.HepcoAreaScraper import HepcoAreaScraper
+from .utilities.rikuden.RikudenAreaScraper import RikudenAreaScraper
+from .utilities.cepco.CepcoAreaScraper import CepcoAreaScraper
+from .utilities.yonden.YondenAreaScraper import YondenAreaScraper
+from .utilities.kyuden.KyudenAreaScraper import KyudenAreaScraper
+from .utilities.okiden.OkidenAreaScraper import OkidenAreaScraper
 
 
 def selectUtility(utility):
@@ -36,14 +37,29 @@ def selectUtility(utility):
     return utilities.get(utility, None)
 
 
+def handler(signum, frame):
+    raise IOError("Scraping took too long...retry")
+
+
+signal.signal(signal.SIGALRM, handler)
+
+
 class AreaDataScraper:
     def __init__(self, utility):
         self.utility = utility
         self.scraper = selectUtility(utility)
 
+    def get_dataframe(self):
+        # Allow 60 seconds for scraping process
+        signal.alarm(60)
+        result = self.scraper._parseCsvs()
+        # End Timer
+        signal.alarm(0)
+        return result
+
     def scrape(self):
         print("Scraping Area Data for {}:".format(self.utility))
-        df = self.scraper.get_dataframe()
+        df = self.get_dataframe()
         numRows = len(df.index)
         print(" - Got {} rows of Data".format(numRows))
 

@@ -107,6 +107,3 @@ class YondenAreaScraper:
 
     def convert_df_to_csv(self, df):
         return df.to_csv(index=False)
-
-    def get_dataframe(self):
-        return self._parseCsvs()
