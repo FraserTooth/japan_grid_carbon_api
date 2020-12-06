@@ -30,7 +30,7 @@ def scrapers(request):
 
 
 @app.route('/area_data/<utility>')
-def area_data(utility):
+def all_area_data(utility):
     response = {}
 
     s = AreaDataScraper(utility)
@@ -43,6 +43,45 @@ def area_data(utility):
     response = {
         "result": "success",
         "rows": numRows,
+        "utility": utility
+    }
+
+    return json.dumps(response), 200, headers
+
+
+@app.route('/area_data/get_data/<utility>')
+def get_data(utility):
+    response = {}
+
+    s = AreaDataScraper(utility)
+
+    if s.scraper == None:
+        return BAD_UTILITY, 400, headers
+
+    numRows = s.get_data()
+
+    response = {
+        "result": "success",
+        "rows": numRows,
+        "utility": utility
+    }
+
+    return json.dumps(response), 200, headers
+
+
+@app.route('/area_data/create_model/<utility>')
+def create_model(utility):
+    response = {}
+
+    s = AreaDataScraper(utility)
+
+    if s.scraper == None:
+        return BAD_UTILITY, 400, headers
+
+    numRows = s.create_timeseries_model()
+
+    response = {
+        "result": "success",
         "utility": utility
     }
 
