@@ -2,11 +2,23 @@ import requests
 from ..UtilityAPI import UtilityAPI
 
 
+config_okiden = {
+    "pumped_storage_factor": 0,
+
+    # Thermal Energy Percentages: https://www.okiden.co.jp/shared/pdf/ir/ar/ar2017/180516_02.pdf
+    "fuel_type_totals": {
+        "lng": 21,
+        "oil": 13,
+        "coal": 61
+    }
+}
+
 # Okiden has no inteconnectors, nuclear or pumped storage
+
 
 class OkidenAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("okiden")
+        super().__init__("okiden", config_okiden)
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -36,42 +48,3 @@ class OkidenAPI(UtilityAPI):
             intensity_solar_output=ci["kWh_solar_output"],
             intensity_wind_output=ci["kWh_wind_output"],
         )
-
-    def get_carbon_intensity_factors(self):
-
-        # Thermal Energy Percentages: https://www.okiden.co.jp/shared/pdf/ir/ar/ar2017/180516_02.pdf
-        # Numbers represent the proportions of energy use
-        fossilFuelStations = {
-            "lng": 21,
-            "oil": 13,
-            "coal": 61
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        # CEPCO Has factors in its info - "For Japan" - Page 9
-        factors = {
-            "Nuclear": 19,
-            "Hydro": 11,
-            "Wind": 26,
-            "Solar": 38,
-            "Gas (Open Cycle)": 599,
-            "Gas (Combined Cycle)": 474,
-            "Oil": 738,
-            "Coal": 943,
-            "Geothermal": 13,
-            # From UK - Not in PDF
-            "Biomass": 120,
-        }
-
-        print("Resolving Intensities for Okiden")
-
-        return {
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": factors["Geothermal"],
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
-            # No interconnectors, nuclear or pumped storage
-        }

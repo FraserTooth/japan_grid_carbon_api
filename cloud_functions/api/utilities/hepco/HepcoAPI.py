@@ -1,10 +1,22 @@
 import requests
 from ..UtilityAPI import UtilityAPI
 
+config_hepco = {
+    "pumped_storage_factor": 0.06,
+
+    # Thermal Energy Percentages: https://wwwc.hepco.co.jp/hepcowwwsite/english/ir/pdf/hepco_group_report_2019.pdf
+    # Numbers represent the proportions of energy use
+    "fuel_type_totals": {
+        "lng": 6.5,
+        "oil": 23.8,
+        "coal": 25.9
+    }
+}
+
 
 class HepcoAPI(UtilityAPI):
     def __init__(self):
-        super().__init__("hepco")
+        super().__init__("hepco", config_hepco)
 
     def _pumped_storage_calc_query_string(self):
         return """
@@ -47,38 +59,3 @@ class HepcoAPI(UtilityAPI):
             intensity_pumped_storage=ci["kWh_pumped_storage"],
             intensity_interconnectors=ci["kWh_interconnectors"]
         )
-
-    def get_carbon_intensity_factors(self):
-        # Get And Calculate Carbon Intensity
-        print("Grabbing Intensities")
-        response = requests.get(
-            "https://api.carbonintensity.org.uk/intensity/factors")
-
-        # Thermal Energy Percentages: https://wwwc.hepco.co.jp/hepcowwwsite/english/ir/pdf/hepco_group_report_2019.pdf
-        # Numbers represent the proportions of energy use
-        fossilFuelStations = {
-            "lng": 6.5,
-            "oil": 23.8,
-            "coal": 25.9
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        json = response.json()
-        factors = json["data"][0]
-
-        print("Resolving Intensities for Hepco")
-
-        return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": 0,  # Probably
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
-            # Not always charged when renewables available, average of this
-            "kWh_pumped_storage": 0.06,
-            # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
-            "kWh_interconnectors": 500
-        }

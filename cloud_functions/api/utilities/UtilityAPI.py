@@ -8,11 +8,25 @@ stage = os.environ['STAGE']
 HORIZON = 2500
 # Bit more than than 3 months of hours (24h * 31d * 3m = 2322)
 
+# https://criepi.denken.or.jp/jp/kenkikaku/report/detail/Y06.html
+national_lifecycle_carbon_intensities_by_source = {
+    "coal": 943,
+    "oil": 738,
+    "lng": 474,
+    "nuclear": 19,
+    "hydro": 11,
+    "geothermal": 13,
+    "solar": 59,
+    "wind": 26,
+    "biomass": 120  # Still use the UK factor
+}
+
 
 class UtilityAPI:
-    def __init__(self, utility):
+    def __init__(self, utility, config):
         self.utility = utility
         self.bqStageName = "" if stage == "production" else "-staging"
+        self.config = config
 
     def _get_intensity_query_string(self):
         query_string = """
@@ -194,6 +208,30 @@ class UtilityAPI:
 
         return pd.read_gbq(query)
 
+    def _query_intensity_forecast(self, from_date, to_date):
+        # Self Join on Table to return the most recently dated intensity forecast
+        query = """
+        SELECT 
+            a.*
+        FROM `japan-grid-carbon-api{bqStageName}.{utility}.intensity_forecast` as a
+        INNER JOIN (
+            SELECT
+            forecast_timestamp,
+            MAX(date_created) as most_recent_forecast_date
+            FROM `japan-grid-carbon-api{bqStageName}.{utility}.intensity_forecast`
+            GROUP BY forecast_timestamp
+        ) b ON a.forecast_timestamp = b.forecast_timestamp AND a.date_created = b.most_recent_forecast_date
+        WHERE EXTRACT(DATE from a.forecast_timestamp) BETWEEN DATE("{from_date}") and DATE("{to_date}")
+        order by a.forecast_timestamp
+        """.format(
+            bqStageName=self.bqStageName,
+            utility=self.utility,
+            from_date=from_date,
+            to_date=to_date
+        )
+
+        return pd.read_gbq(query)
+
     def historic_intensity(self, from_date, to_date):
         query = """
         SELECT
@@ -351,10 +389,11 @@ class UtilityAPI:
 
         return output
 
-    def timeseries_prediction(self):
-        df = self._query_timeseries_model()
+    def timeseries_prediction(self, from_date, to_date):
+        df = self._query_intensity_forecast(from_date, to_date)
 
         df['forecast_timestamp'] = df['forecast_timestamp'].astype(str)
+        df['date_created'] = df['date_created'].astype(str)
 
         output = {
             'forecast': df.to_dict(orient='records')
@@ -398,36 +437,23 @@ class UtilityAPI:
 
         return "Success"
 
-    # Likely to be Overwritten
-
     def get_carbon_intensity_factors(self):
-        # Get And Calculate Carbon Intensity
-        print("Grabbing Intensities")
-        response = requests.get(
-            "https://api.carbonintensity.org.uk/intensity/factors")
+        stations = self.config["fuel_type_totals"]
+        totalFossil = stations["lng"] + \
+            stations["oil"] + stations["coal"]
 
-        # Thermal Data: https://www7.tepco.co.jp/fp/thermal-power/list-e.html
-        fossilFuelStations = {
-            "lng": 4.38 + 3.6 + 3.6 + 5.16 + 3.42 + 3.541 + 1.15 + 2 + 1.14,
-            "oil": 5.66 + 1.05 + 4.40,
-            "coal": 2
-        }
-        totalFossil = fossilFuelStations["lng"] + \
-            fossilFuelStations["oil"] + fossilFuelStations["coal"]
-
-        json = response.json()
-        factors = json["data"][0]
+        factors = national_lifecycle_carbon_intensities_by_source
 
         return {
-            "kWh_nuclear": factors["Nuclear"],
-            "kWh_fossil": (factors["Coal"] * fossilFuelStations["coal"] + factors["Oil"] * fossilFuelStations["oil"] + factors["Gas (Open Cycle)"] * fossilFuelStations["lng"]) / totalFossil,
-            "kWh_hydro": factors["Hydro"],
-            "kWh_geothermal": 0,  # Probably
-            "kWh_biomass": factors["Biomass"],
-            "kWh_solar_output": factors["Solar"],
-            "kWh_wind_output": factors["Wind"],
+            "kWh_nuclear": factors["nuclear"],
+            "kWh_fossil": (factors["coal"] * stations["coal"] + factors["oil"] * stations["oil"] + factors["lng"] * stations["lng"]) / totalFossil,
+            "kWh_hydro": factors["hydro"],
+            "kWh_geothermal": factors["geothermal"],
+            "kWh_biomass": factors["biomass"],
+            "kWh_solar_output": factors["solar"],
+            "kWh_wind_output": factors["wind"],
             # Not always charged when renewables available, average of this
-            "kWh_pumped_storage": 80.07,
+            "kWh_pumped_storage": self.config["pumped_storage_factor"],
             # TODO: Replace this with a rolling calculation of the average of other parts of Japan's carbon intensity, probably around 850 though
             "kWh_interconnectors": 500
         }

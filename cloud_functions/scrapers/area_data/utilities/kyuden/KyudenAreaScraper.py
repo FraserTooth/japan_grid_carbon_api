@@ -3,6 +3,8 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime
+from urllib.request import urlopen
+import re
 
 
 class KyudenAreaScraper:
@@ -11,6 +13,14 @@ class KyudenAreaScraper:
         # Main Page
         # https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure
 
+        url = "https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure"
+        page = urlopen(url)
+        html_bytes = page.read()
+        html = html_bytes.decode("utf-8")
+
+        partial_urls = re.findall(
+            "\/var\/rev0\/\d{4}\/\d{4}\/area_jyukyu_jisseki\S+\.csv", html)
+
         # CSVs change format halfway thru
         # https://www.kyuden.co.jp/var/rev0/0254/3833/area_jyukyu_jisseki_H28_1Q.csv
         #  to
@@ -18,36 +28,7 @@ class KyudenAreaScraper:
         #  then final one is first month in set?
         # https://www.kyuden.co.jp/var/rev0/0254/3850/area_jyukyu_jisseki_2020_07.csv
 
-        CSV_URLS = []
-
-        groupNum = "0260"  # Changes every month
-        fileNumStart = 8826  # Changes every month
-        # TODO: Move to a HTML parsing version to get the new endpoints each month
-
-        for year in range(28, 31):
-            for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_H{year}_{quarter}Q.csv".format(
-                    fileNum=fileNumStart + len(CSV_URLS),
-                    year=year,
-                    quarter=quarter,
-                    groupNum=groupNum
-                )
-                CSV_URLS.append(url)
-
-        for year in range(2019, 2021):
-            for quarter in range(1, 5):
-                url = "https://www.kyuden.co.jp/var/rev0/{groupNum}/{fileNum}/area_jyukyu_jisseki_{year}_{quarter}Q.csv".format(
-                    fileNum=fileNumStart + len(CSV_URLS),
-                    year=year,
-                    quarter=quarter,
-                    groupNum=groupNum
-                )
-                CSV_URLS.append(url)
-
-        # TODO - Goes wierd in the off months, need to redo with page grabbing
-        # CSV_URLS.append(
-        #     "https://www.kyuden.co.jp/var/rev0/0257/4387/area_jyukyu_jisseki_2020_07_08.csv",
-        # )
+        CSV_URLS = map(lambda u: "https://www.kyuden.co.jp" + u, partial_urls)
 
         dtypes = {
             "MWh_area_demand": int,
