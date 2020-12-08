@@ -36,7 +36,7 @@ echo ">> Building ESP-v2 Image"
 
 echo ">> Deploying ESP-v2 Image"
 gcloud run deploy api \
---image="gcr.io/$PROJECT/endpoints-runtime-serverless:2.20.0-$ENDPOINT-$CONFIG_ID" \
+--image="gcr.io/$PROJECT/endpoints-runtime-serverless:2.21.0-$ENDPOINT-$CONFIG_ID" \
 --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
 --allow-unauthenticated \
 --platform managed \
