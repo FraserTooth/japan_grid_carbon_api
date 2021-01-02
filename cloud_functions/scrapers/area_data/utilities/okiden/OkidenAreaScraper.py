@@ -60,7 +60,8 @@ class OkidenAreaScraper:
 
         def _renameHeader(header):
             translations = {
-                "0_1": "datetime",
+                0: "date",
+                1: "time",
                 2: "MWh_area_demand",
                 4: "MWh_fossil",
                 5: "MWh_hydro",
@@ -84,7 +85,6 @@ class OkidenAreaScraper:
                     skiprows=7,
                     header=None,
                     encoding="cp932",
-                    parse_dates=[[0, 1]],
                     # Skip Empty Row
                     usecols=[0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11],
                 )
@@ -92,7 +92,16 @@ class OkidenAreaScraper:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
                 return None
+            # Year Column from URL for badly formatted Japanese date column
+            year = url[-8:-4]
+            data["year"] = year
             return data.dropna(thresh=8)
+
+        def fix_japanese_dates(row):
+            if "日" in row['date']:
+                row['date'] = row["year"] + "/" + \
+                    row['date'].replace("日", "/").replace("月", "/")
+            return row
 
         print("Reading CSVs")
 
@@ -104,7 +113,19 @@ class OkidenAreaScraper:
         print("Renaming Columns")
         df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
-        df['datetime'] = pd.to_datetime(df['datetime'])
+        # Fix Date Column with Japanese dates
+        print("Fixing Japanese Dates")
+        df = df.apply(
+            fix_japanese_dates,
+            axis=1,
+        )
+
+        # Create Time Column
+        print("Creating Time Column")
+        df.insert(loc=0,
+                  column='datetime',
+                  value=pd.to_datetime(df['date'] + ' ' + df['time']))
+        df = df.drop(columns=['date', 'time', 'year'])
 
         return df
 

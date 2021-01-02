@@ -34,9 +34,31 @@ CONFIG_ID=$(gcloud endpoints configs list --service $ENDPOINT --project $PROJECT
 echo ">> Building ESP-v2 Image"
 ../gcloud_build_image -s $ENDPOINT -c $CONFIG_ID -p $PROJECT
 
+
+BASE_IMAGE_NAME="gcr.io/endpoints-release/endpoints-runtime-serverless"
+ESP_TAG="2"
+echo "Determining fully-qualified ESP version for tag: ${ESP_TAG}"
+ALL_TAGS=$(gcloud container images list-tags "${BASE_IMAGE_NAME}" \
+    --filter="tags~^${ESP_TAG}$" \
+--format="value(tags)")
+IFS=',' read -ra TAGS_ARRAY <<< "${ALL_TAGS}"
+
+if [ ${#TAGS_ARRAY[@]} -eq 0 ]; then
+error_exit "Did not find ESP version: ${ESP_TAG}"
+fi;
+
+# Find the tag with the longest length.
+ESP_FULL_VERSION=""
+for tag in "${TAGS_ARRAY[@]}"; do
+    if [ ${#tag} -gt ${#ESP_FULL_VERSION} ]; then
+    ESP_FULL_VERSION=${tag}
+    fi
+done
+echo "Building image for ESP version: ${ESP_FULL_VERSION}"
+
 echo ">> Deploying ESP-v2 Image"
 gcloud run deploy api \
---image="gcr.io/$PROJECT/endpoints-runtime-serverless:2.21.0-$ENDPOINT-$CONFIG_ID" \
+--image="gcr.io/$PROJECT/endpoints-runtime-serverless:${ESP_FULL_VERSION}-$ENDPOINT-$CONFIG_ID" \
 --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
 --allow-unauthenticated \
 --platform managed \
