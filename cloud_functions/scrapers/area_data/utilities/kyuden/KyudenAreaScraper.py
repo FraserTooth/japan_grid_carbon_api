@@ -3,23 +3,12 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime
-from urllib.request import urlopen
-import re
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class KyudenAreaScraper:
+class KyudenAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
-        # Main Page
-        # https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure
-
-        url = "https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure"
-        page = urlopen(url)
-        html_bytes = page.read()
-        html = html_bytes.decode("utf-8")
-
-        partial_urls = re.findall(
-            "\/var\/rev0\/\d{4}\/\d{4}\/area_jyukyu_jisseki\S+\.csv", html)
 
         # CSVs change format halfway thru
         # https://www.kyuden.co.jp/var/rev0/0254/3833/area_jyukyu_jisseki_H28_1Q.csv
@@ -28,7 +17,11 @@ class KyudenAreaScraper:
         #  then final one is first month in set?
         # https://www.kyuden.co.jp/var/rev0/0254/3850/area_jyukyu_jisseki_2020_07.csv
 
-        CSV_URLS = map(lambda u: "https://www.kyuden.co.jp" + u, partial_urls)
+        CSV_URLS = self.get_data_urls_from_page(
+            "https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure",
+            "\/var\/rev0\/\d{4}\/\d{4}\/area_jyukyu_jisseki\S+\.csv",
+            "https://www.kyuden.co.jp"
+        )
 
         dtypes = {
             "MWh_area_demand": int,
@@ -126,9 +119,6 @@ class KyudenAreaScraper:
             lambda x: int(x))
         df['MWh_wind_throttling'] = df['MWh_wind_throttling'].apply(
             lambda x: int(x))
-
-        print(df.info)
-        print(df.dtypes)
 
         return df
 

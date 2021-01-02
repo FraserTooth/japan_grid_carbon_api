@@ -42,10 +42,20 @@ class AreaDataScraper:
         self.scraper = selectUtility(utility)
 
     def scrape(self):
+        print("Full Scrape and Model of Area Data for {}:".format(self.utility))
+        numRows, startDate, endDate = self.get_data()
+        self.create_timeseries_model()
+        return numRows, startDate, endDate
+
+    def get_data(self):
         print("Scraping Area Data for {}:".format(self.utility))
         df = self.scraper.get_dataframe()
         numRows = len(df.index)
+        startDate = df['datetime'].iloc[0]
+        endDate = df['datetime'].iloc[-1]
         print(" - Got {} rows of Data".format(numRows))
+        print("   - Starting from {}".format(startDate))
+        print("   - Ending at {}".format(endDate))
 
         print("Sending:")
         self._upload_blob_to_storage(df)
@@ -55,10 +65,7 @@ class AreaDataScraper:
             df, 'historical_data_by_generation_type', 'replace')
         print(" - Sent to BigQuery")
 
-        print("Creating Timeseries Model")
-        self._create_timeseries_model()
-        print(" - Timeseries Model Created")
-        return numRows
+        return numRows, startDate, endDate
 
     def _upload_blob_to_storage(self, df):
         CS = storage.Client()
@@ -84,8 +91,8 @@ class AreaDataScraper:
 
         df.to_gbq(table_id, if_exists=insertiontype)
 
-    def _create_timeseries_model(self):
-
+    def create_timeseries_model(self):
+        print("Creating Timeseries Model")
         # Dynamically Pull in the API code
         #   this function runs once upon scraping
         #   but all functional data - re: Carbon is in API
@@ -106,6 +113,7 @@ class AreaDataScraper:
         forecast_df = api._query_timeseries_model()
         forecast_df['date_created'] = datetime.now()
 
+        print(" - Timeseries Model Created")
         print("Sending Forecast To BigQuery")
 
         self._insert_into_bigquery(forecast_df, 'intensity_forecast', 'append')
