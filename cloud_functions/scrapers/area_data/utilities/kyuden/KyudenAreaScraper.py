@@ -120,9 +120,6 @@ class KyudenAreaScraper(UtilityAreaScraper):
         df['MWh_wind_throttling'] = df['MWh_wind_throttling'].apply(
             lambda x: int(x))
 
-        print(df.info)
-        print(df.dtypes)
-
         return df
 
     def get_json(self):
