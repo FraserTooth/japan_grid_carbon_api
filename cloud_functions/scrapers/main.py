@@ -37,12 +37,14 @@ def all_area_data(utility):
     if s.scraper == None:
         return BAD_UTILITY, 400, headers
 
-    numRows = s.scrape()
+    numRows, startDate, endDate = s.scrape()
 
     response = {
         "result": "success",
         "rows": numRows,
-        "utility": utility
+        "utility": utility,
+        "from": startDate.strftime("%Y/%m/%d, %H:%M:%S"),
+        "to": endDate.strftime("%Y/%m/%d, %H:%M:%S")
     }
 
     return json.dumps(response), 200, headers

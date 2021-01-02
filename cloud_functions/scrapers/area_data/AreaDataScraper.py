@@ -43,15 +43,19 @@ class AreaDataScraper:
 
     def scrape(self):
         print("Full Scrape and Model of Area Data for {}:".format(self.utility))
-        numRows = self.get_data()
+        numRows, startDate, endDate = self.get_data()
         self.create_timeseries_model()
-        return numRows
+        return numRows, startDate, endDate
 
     def get_data(self):
         print("Scraping Area Data for {}:".format(self.utility))
         df = self.scraper.get_dataframe()
         numRows = len(df.index)
+        startDate = df['datetime'].iloc[0]
+        endDate = df['datetime'].iloc[-1]
         print(" - Got {} rows of Data".format(numRows))
+        print("   - Starting from {}".format(startDate))
+        print("   - Ending at {}".format(endDate))
 
         print("Sending:")
         self._upload_blob_to_storage(df)
@@ -61,7 +65,7 @@ class AreaDataScraper:
             df, 'historical_data_by_generation_type', 'replace')
         print(" - Sent to BigQuery")
 
-        return numRows
+        return numRows, startDate, endDate
 
     def _upload_blob_to_storage(self, df):
         CS = storage.Client()
