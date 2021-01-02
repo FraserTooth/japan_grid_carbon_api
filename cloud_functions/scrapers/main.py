@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 from scrapers.area_data.AreaDataScraper import AreaDataScraper
 
-
 headers = {}
 
 # Standard Response Messages for Errors
