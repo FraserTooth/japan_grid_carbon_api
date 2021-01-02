@@ -35,8 +35,9 @@ echo ">> Building ESP-v2 Image"
 ../gcloud_build_image -s $ENDPOINT -c $CONFIG_ID -p $PROJECT
 
 echo ">> Deploying ESP-v2 Image"
+# Variable NEW_IMAGE is created during gcloud_build_image
 gcloud run deploy api \
---image="gcr.io/$PROJECT/endpoints-runtime-serverless:2.21.0-$ENDPOINT-$CONFIG_ID" \
+--image="$NEW_IMAGE" \
 --set-env-vars=ESPv2_ARGS=--cors_preset=basic \
 --allow-unauthenticated \
 --platform managed \
