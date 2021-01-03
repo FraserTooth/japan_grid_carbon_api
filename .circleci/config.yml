@@ -79,8 +79,9 @@ workflows:
 
       # Staging
       - deploy:
-          context: japan-grid-carbon-api-staging
-          context: DenkiCarbon-Slack
+          context:
+            - japan-grid-carbon-api-staging
+            - DenkiCarbon-Slack
           stage: "staging"
           requires:
             - test
@@ -91,8 +92,9 @@ workflows:
 
       # Production
       - deploy:
-          context: japan-grid-carbon-api
-          context: DenkiCarbon-Slack
+          context:
+            - japan-grid-carbon-api
+            - DenkiCarbon-Slack
           stage: "production"
           requires:
             - test
