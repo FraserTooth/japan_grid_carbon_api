@@ -19,8 +19,12 @@ jobs:
           name: test
           command: pytest
 
-  deploy-staging:
+  deploy:
     executor: serverless/default
+    parameters:
+      stage:
+        type: string
+        default: staging
     steps:
       - checkout
 
@@ -31,8 +35,8 @@ jobs:
           command: |
             cd ${HOME}
             mkdir .gcloud 
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
-            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-<< parameters.stage >>.json
+            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-<< parameters.stage >>.json
             gcloud --quiet config set project $GOOGLE_PROJECT_ID
             gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
 
@@ -58,55 +62,7 @@ jobs:
       - run:
           name: deploy
           command: |
-            ./deploy.sh staging
-
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-
-  deploy-production:
-    executor: serverless/default
-    steps:
-      - checkout
-
-      - gcp-cli/install
-
-      - run:
-          name: Initialize gcloud CLI to connect to Google Cloud
-          command: |
-            cd ${HOME}
-            mkdir .gcloud 
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-production.json
-            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-production.json
-            gcloud --quiet config set project $GOOGLE_PROJECT_ID
-            gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run:
-          name: Install Serverless CLI and dependencies
-          command: |
-            cd cloud_functions/
-            sudo npm i -g serverless
-            npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-
-
-      - run:
-          name: deploy
-          command: |
-            ./deploy.sh production
+            ./deploy.sh << parameters.stage >>
 
       - slack/notify:
           event: fail
@@ -121,9 +77,11 @@ workflows:
       - test:
           context: japan-grid-carbon-api-staging
 
-      - deploy-staging:
+      # Staging
+      - deploy:
           context: japan-grid-carbon-api-staging
           context: DenkiCarbon-Slack
+          stage: "staging"
           requires:
             - test
           filters:
@@ -131,9 +89,11 @@ workflows:
               only:
                 - master
 
-      - deploy-production:
+      # Production
+      - deploy:
           context: japan-grid-carbon-api
           context: DenkiCarbon-Slack
+          stage: "production"
           requires:
             - test
           filters:
