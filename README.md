@@ -43,6 +43,7 @@ This project is aimed at UNIX runtimes, if you are on Windows, consider using [W
 
 **Python Bits**
 - Install Python3 to match the [current Google Cloud Functions Runtime](https://cloud.google.com/functions/docs/concepts/python-runtime)
+  - I use Python 3.8, and I use [pyenv](https://github.com/pyenv/pyenv) to manage my local versions
 - Consider using a [virtual environment](https://docs.python.org/3/tutorial/venv.html)
 - Install Pip
 - Install project dependancies
@@ -88,6 +89,9 @@ Example Graphs So Far:
 ### Useful Functions Snippets
 
 ```bash
+# Create a Virtual Environment
+python -m venv .venv
+
 # Open Virtual Environment
 source .venv/bin/activate
 
