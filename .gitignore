@@ -245,3 +245,6 @@ node_modules
 .DS_Store
 .tmp
 .dev.*
+.vscode
+pyvenv.cfg
+lib64
