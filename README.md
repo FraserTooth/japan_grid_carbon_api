@@ -75,10 +75,17 @@ In the meantime, we can use a small average figure for the Carbon Intensity, but
 
 Data has been retrived from:
 
+- CEPCO: [Source Link](https://www.energia.co.jp/nw/service/retailer/data/area/)
+- Chuden: [Source Link](https://powergrid.chuden.co.jp/denkiyoho/)
+- HEPCO: [Source Link](https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/supply_demand_results.html)
+- KEPCO: [Source Link](https://www.kansai-td.co.jp/denkiyoho/area-performance.html)
+- Kyuden: [Source Link](https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure)
+- Okiden: [Source Link](https://www.okiden.co.jp/business-support/service/supply-and-demand/index.html)
+- Rikuden: [Source Link](http://www.rikuden.co.jp/nw_jyukyudata/area_jisseki.html)
 - TEPCO: [Source Link](http://www.tepco.co.jp/forecast/html/area_data-j.html)
 - Tohokuden: [Source Link](https://setsuden.nw.tohoku-epco.co.jp/download.html)
-- KEPCO: [Source Link](https://www.kansai-td.co.jp/denkiyoho/area-performance.html)
-- And more...
+- Yonden: [Source Link](https://www.yonden.co.jp/nw/renewable_energy/data/supply_demand.html)
+- And some other places
 
 Example Graphs So Far:
 
