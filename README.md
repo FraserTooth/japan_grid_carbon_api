@@ -14,7 +14,7 @@ API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid..
 - Combined and extensible endpoint using Flask routing
 - Added Pytest Tests
 - Implementation of the [Serverless](https://www.serverless.com/) deployment framework
-- Basic Website Built @ [denkicarbon.jp](denkicarbon.jp) - [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website) 
+- Basic Website Built @ [denkicarbon.jp](https://denkicarbon.jp) - [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website) 
 
 ## Planned Work:
 
