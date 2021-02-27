@@ -106,7 +106,7 @@ def validateDates(fromDate, toDate):
             return BAD_TO_DATE_FORMAT
 
         # Check Order of Dates
-        if(datetimeTo > datetimeFrom):
+        if(datetimeTo < datetimeFrom):
             return TO_BEFORE_FROM
     return {
         "valid": True

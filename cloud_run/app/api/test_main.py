@@ -49,8 +49,7 @@ def test_daily_carbon_intensity_response(mocker):
         "fromCache": False
     }
 
-    assert body == json.dumps(expectedData)
-    assert code == 200
+    assert body == expectedData
 
 
 def test_daily_carbon_intensity_cache(mocker):
@@ -60,8 +59,8 @@ def test_daily_carbon_intensity_cache(mocker):
         return_value='xyz'
     )
 
-    body1, code1, cors1 = daily_carbon_intensity("tepco")
-    body2, code2, cors2 = daily_carbon_intensity("tepco")
+    body1 = daily_carbon_intensity("tepco")
+    body2 = daily_carbon_intensity("tepco")
 
     expectedData1 = {
         "data": "xyz",
@@ -73,8 +72,8 @@ def test_daily_carbon_intensity_cache(mocker):
         "fromCache": True
     }
 
-    assert body1 == json.dumps(expectedData1)
-    assert body2 == json.dumps(expectedData2)
+    assert body1 == expectedData1
+    assert body2 == expectedData2
 
 
 # Daily Carbon Intensity by Breakdown
@@ -111,8 +110,7 @@ def test_daily_carbon_intensity_with_breakdown_response(mocker):
         "fromCache": False
     }
 
-    assert body == json.dumps(expectedData)
-    assert code == 200
+    assert body == expectedData
 
 
 def test_daily_carbon_intensity_with_breakdown_cache(mocker):
@@ -122,9 +120,9 @@ def test_daily_carbon_intensity_with_breakdown_cache(mocker):
         return_value='xyz'
     )
 
-    body1, code1, cors1 = daily_carbon_intensity_with_breakdown(
+    body1 = daily_carbon_intensity_with_breakdown(
         "tepco", "month")
-    body2, code2, cors2 = daily_carbon_intensity_with_breakdown(
+    body2 = daily_carbon_intensity_with_breakdown(
         "tepco", "month")
 
     expectedData1 = {
@@ -137,8 +135,8 @@ def test_daily_carbon_intensity_with_breakdown_cache(mocker):
         "fromCache": True
     }
 
-    assert body1 == json.dumps(expectedData1)
-    assert body2 == json.dumps(expectedData2)
+    assert body1 == expectedData1
+    assert body2 == expectedData2
 
 
 # Daily Carbon Intensity Predictions
@@ -175,8 +173,7 @@ def test_daily_carbon_intensity_predictions_response(mocker):
         "fromCache": False
     }
 
-    assert body == json.dumps(expectedData)
-    assert code == 200
+    assert body == expectedData
 
 
 def test_daily_carbon_intensity_predictions_cache(mocker):
@@ -186,9 +183,9 @@ def test_daily_carbon_intensity_predictions_cache(mocker):
         return_value='xyz'
     )
 
-    body1, code1, cors1 = daily_carbon_intensity_prediction(
+    body1 = daily_carbon_intensity_prediction(
         "tepco", 2030)
-    body2, code2, cors2 = daily_carbon_intensity_prediction(
+    body2 = daily_carbon_intensity_prediction(
         "tepco", 2030)
 
     expectedData1 = {
@@ -201,8 +198,8 @@ def test_daily_carbon_intensity_predictions_cache(mocker):
         "fromCache": True
     }
 
-    assert body1 == json.dumps(expectedData1)
-    assert body2 == json.dumps(expectedData2)
+    assert body1 == expectedData1
+    assert body2 == expectedData2
 
 # Carbon Intensity Timeseries Predictions
 
@@ -233,7 +230,7 @@ def test_carbon_intensity_timeseries_prediction_bad_date_to():
 
 def test_carbon_intensity_timeseries_prediction_to_before_from():
     with pytest.raises(HTTPException) as error:
-        message = carbon_intensity_timeseries_prediction(
+        carbon_intensity_timeseries_prediction(
             "tepco", "2020-01-02", "2020-01-01")
     assert error.value.detail == generate_standard_error_model(
         'Invalid Query - TO Date before FROM Date', 400)
@@ -254,8 +251,7 @@ def test_carbon_intensity_timeseries_prediction_response(mocker):
         "fromCache": False
     }
 
-    assert body == json.dumps(expectedData)
-    assert code == 200
+    assert body == expectedData
 
 
 def test_carbon_intensity_timeseries_prediction_cache(mocker):
@@ -265,9 +261,9 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
         return_value='xyz'
     )
 
-    body1, code1, cors1 = carbon_intensity_timeseries_prediction(
+    body1 = carbon_intensity_timeseries_prediction(
         "tepco", "2020-01-01")
-    body2, code2, cors2 = carbon_intensity_timeseries_prediction(
+    body2 = carbon_intensity_timeseries_prediction(
         "tepco", "2020-01-01")
 
     expectedData1 = {
@@ -280,8 +276,8 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
         "fromCache": True
     }
 
-    assert body1 == json.dumps(expectedData1)
-    assert body2 == json.dumps(expectedData2)
+    assert body1 == expectedData1
+    assert body2 == expectedData2
 
 
 # Carbon Intensity Historic Intensities
@@ -326,8 +322,7 @@ def test_carbon_intensity_historical_response(mocker):
         "fromCache": False
     }
 
-    assert body == json.dumps(expectedData)
-    assert code == 200
+    assert body == expectedData
 
 
 def test_carbon_intensity_historical_cache(mocker):
@@ -337,9 +332,9 @@ def test_carbon_intensity_historical_cache(mocker):
         return_value='xyz'
     )
 
-    body1, code1, cors1 = historical_intensity(
+    body1 = historical_intensity(
         "tepco", "2020-01-02", "2020-02-02")
-    body2, code2, cors2 = historical_intensity(
+    body2 = historical_intensity(
         "tepco", "2020-01-02", "2020-02-02")
 
     expectedData1 = {
@@ -352,5 +347,5 @@ def test_carbon_intensity_historical_cache(mocker):
         "fromCache": True
     }
 
-    assert body1 == json.dumps(expectedData1)
-    assert body2 == json.dumps(expectedData2)
+    assert body1 == expectedData1
+    assert body2 == expectedData2
