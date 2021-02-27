@@ -1,0 +1,72 @@
+[
+  {
+    "name": "datetime",
+    "type": "DATETIME",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_demand",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_nuclear",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_fossil",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_hydro",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_geothermal",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_biomass",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_solar_output",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_solar_throttling",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_wind_output",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_wind_throttling",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_pumped_storage",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_interconnectors",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "kWh_total",
+    "type": "NUMERIC",
+    "mode": "REQUIRED"
+  }
+]

@@ -1,11 +1,15 @@
 import json
 import copy
-import werkzeug.datastructures
-from flask import Flask
+from fastapi import APIRouter
 from datetime import datetime
-import re
 now = datetime.now()
-app = Flask(__name__)
+
+router = APIRouter(
+    prefix="/api/v1/carbon_intensity",
+    # tags=["items"],
+    # dependencies=[Depends(get_token_header)],
+    responses={404: {"description": "Not found"}},
+)
 
 from pprint import pprint
 
@@ -111,31 +115,15 @@ def validateDates(fromDate, toDate):
             return BAD_TO_DATE_FORMAT
 
         # Check Order of Dates
-        if(datetimeTo < datetimeFrom):
+        if(datetimeTo > datetimeFrom):
             return TO_BEFORE_FROM
     return {
         "valid": True
     }
 
 
-def api(request):
-    with app.app_context():
-        headers = werkzeug.datastructures.Headers()
-        for key, value in request.headers.items():
-            headers.add(key, value)
-        with app.test_request_context(method=request.method, base_url=request.base_url, path=request.path, query_string=request.query_string, headers=headers, data=request.data):
-            try:
-                rv = app.preprocess_request()
-                if rv is None:
-                    rv = app.dispatch_request()
-            except Exception as e:
-                rv = app.handle_user_exception(e)
-            response = app.make_response(rv)
-            return app.process_response(response)
-
-
-@app.route('/v1/carbon_intensity/historic/<utility>/<fromDate>', defaults={'toDate': None})
-@app.route('/v1/carbon_intensity/historic/<utility>/<fromDate>/<toDate>')
+@ router.get('/historic/{utility}/{fromDate}')
+@ router.get('/historic/{utility}/{fromDate}/{toDate}')
 def historical_intensity(utility, fromDate, toDate=None):
     response = {}
 
@@ -179,7 +167,7 @@ def historical_intensity(utility, fromDate, toDate=None):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v1/carbon_intensity/average/<utility>')
+@ router.get('/average/{utility}')
 def daily_carbon_intensity(utility):
     response = {}
 
@@ -203,7 +191,7 @@ def daily_carbon_intensity(utility):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v1/carbon_intensity/average/<breakdown>/<utility>')
+@ router.get('/average/{breakdown}/{utility}')
 def daily_carbon_intensity_with_breakdown(utility, breakdown):
     response = {}
 
@@ -240,7 +228,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v1/carbon_intensity/forecast/average/<year>/<utility>')
+@ router.get('/forecast/average/{year}/{utility}')
 def daily_carbon_intensity_prediction(utility, year):
     response = {}
 
@@ -273,8 +261,8 @@ def daily_carbon_intensity_prediction(utility, year):
     return json.dumps(response), 200, headers
 
 
-@app.route('/v1/carbon_intensity/forecast/<utility>/<fromDate>', defaults={'toDate': None})
-@app.route('/v1/carbon_intensity/forecast/<utility>/<fromDate>/<toDate>')
+@ router.get('/forecast/{utility}/{fromDate}')
+@ router.get('/forecast/{utility}/{fromDate}/{toDate}')
 def carbon_intensity_timeseries_prediction(utility, fromDate, toDate=None):
     response = {}
 

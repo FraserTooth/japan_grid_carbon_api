@@ -1,12 +1,14 @@
-version: "3.9"
+version: "3.3"
 
 services:
   web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - .:/code
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+    environment:
+      - STAGE=stagings
+      - GOOGLE_APPLICATION_CREDENTIALS=.gcloud/japan-grid-carbon-service-key-staging.json
