@@ -1,6 +1,5 @@
-import json
 import copy
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from datetime import datetime
 now = datetime.now()
 
@@ -26,10 +25,10 @@ from .utilities.okiden.OkidenAPI import OkidenAPI
 
 
 def generate_standard_error_model(message, code):
-    return json.dumps({
+    return {
         "message": message,
         "code": code
-    })
+    }
 
 
 # Standard Response Messages for Errors
@@ -122,11 +121,11 @@ def historical_intensity(utility, fromDate, toDate=None):
     # Check Utility
     utilityClass = selectUtility(utility)
     if utilityClass == None:
-        return BAD_UTILITY, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_UTILITY)
 
     datesValid = validateDates(fromDate, toDate)
     if(datesValid["valid"] == False):
-        return datesValid["response"], 400, headers
+        raise HTTPException(status_code=400, detail=datesValid["response"])
 
     if(toDate == None):
         toDate = fromDate
@@ -166,7 +165,7 @@ def daily_carbon_intensity(utility):
     utilityClass = selectUtility(utility)
 
     if utilityClass == None:
-        return BAD_UTILITY, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_UTILITY)
 
     # Check Cache
     if "daily_intensity" in cache[utility]:
@@ -191,7 +190,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
 
     # Sense Check Utiltity
     if utilityClass == None:
-        return BAD_UTILITY, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_UTILITY)
 
     # Check Breakdown Type
     breakdowns = {
@@ -202,7 +201,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     }
     dataSource = breakdowns.get(breakdown, None)
     if dataSource == None:
-        return BAD_BREAKDOWN, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_BREAKDOWN)
 
     # Check Cache
     if breakdown in cache[utility]:
@@ -228,11 +227,11 @@ def daily_carbon_intensity_prediction(utility, year):
 
     # Sense Check Utiltity
     if utilityClass == None:
-        return BAD_UTILITY, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_UTILITY)
 
     # Check Breakdown Type
     if int(year) < now.year or int(year) > (now.year + 50):
-        return BAD_YEAR, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_YEAR)
 
     print("Fetching Prediction - " + utility +
           " predicted intensity for " + str(year) + ":")
@@ -261,11 +260,11 @@ def carbon_intensity_timeseries_prediction(utility, fromDate, toDate=None):
     # Check Utility
     utilityClass = selectUtility(utility)
     if utilityClass == None:
-        return BAD_UTILITY, 400, headers
+        raise HTTPException(status_code=400, detail=BAD_UTILITY)
 
     datesValid = validateDates(fromDate, toDate)
     if(datesValid["valid"] == False):
-        return datesValid["response"], 400, headers
+        raise HTTPException(status_code=400, detail=datesValid["response"])
 
     if(toDate == None):
         toDate = fromDate
