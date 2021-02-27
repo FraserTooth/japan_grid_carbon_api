@@ -29,12 +29,10 @@ def before_each():
 # Daily Carbon Intensity
 
 def test_daily_carbon_intensity_bad_utility():
-    with pytest.raises(HTTPException):
-        message, code, cors = daily_carbon_intensity(
-            "fish")
-        assert message == generate_standard_error_model(
-            'Invalid Utility Specified', 400)
-        assert code == 400
+    with pytest.raises(HTTPException) as error:
+        daily_carbon_intensity("fish")
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
 
 
 def test_daily_carbon_intensity_response(mocker):
@@ -44,7 +42,7 @@ def test_daily_carbon_intensity_response(mocker):
         return_value='xyz'
     )
 
-    body, code, cors = daily_carbon_intensity("tepco")
+    body = daily_carbon_intensity("tepco")
 
     expectedData = {
         "data": "xyz",
@@ -83,21 +81,19 @@ def test_daily_carbon_intensity_cache(mocker):
 
 
 def test_daily_carbon_intensity_with_breakdown_bad_utility():
-    with pytest.raises(HTTPException):
-        message, code, cors = daily_carbon_intensity_with_breakdown(
+    with pytest.raises(HTTPException) as error:
+        daily_carbon_intensity_with_breakdown(
             "fish", "breakdown")
-        assert message == generate_standard_error_model(
-            'Invalid Utility Specified', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
 
 
 def test_daily_carbon_intensity_with_breakdown_bad_breakdown():
-    with pytest.raises(HTTPException):
-        message, code, cors = daily_carbon_intensity_with_breakdown(
+    with pytest.raises(HTTPException) as error:
+        daily_carbon_intensity_with_breakdown(
             "tepco", "fish")
-        assert message == generate_standard_error_model(
-            'Invalid Breakdown Specified', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Breakdown Specified', 400)
 
 
 def test_daily_carbon_intensity_with_breakdown_response(mocker):
@@ -107,7 +103,7 @@ def test_daily_carbon_intensity_with_breakdown_response(mocker):
         return_value='xyz'
     )
 
-    body, code, cors = daily_carbon_intensity_with_breakdown(
+    body = daily_carbon_intensity_with_breakdown(
         "tepco", "month")
 
     expectedData = {
@@ -149,21 +145,19 @@ def test_daily_carbon_intensity_with_breakdown_cache(mocker):
 
 
 def test_daily_carbon_intensity_predictions_bad_utility():
-    with pytest.raises(HTTPException):
-        message, code, cors = daily_carbon_intensity_prediction(
+    with pytest.raises(HTTPException) as error:
+        daily_carbon_intensity_prediction(
             "fish", 2030)
-        assert message == generate_standard_error_model(
-            'Invalid Utility Specified', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
 
 
 def test_daily_carbon_intensity_predictions_bad_year():
-    with pytest.raises(HTTPException):
-        message, code, cors = daily_carbon_intensity_prediction(
+    with pytest.raises(HTTPException) as error:
+        daily_carbon_intensity_prediction(
             "tepco", 2000)
-        assert message == generate_standard_error_model(
-            'Invalid Year Specified - must be between this year and 50 from now', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Year Specified - must be between this year and 50 from now', 400)
 
 
 def test_daily_carbon_intensity_predictions_response(mocker):
@@ -173,7 +167,7 @@ def test_daily_carbon_intensity_predictions_response(mocker):
         return_value='xyz'
     )
 
-    body, code, cors = daily_carbon_intensity_prediction(
+    body = daily_carbon_intensity_prediction(
         "tepco", 2030)
 
     expectedData = {
@@ -214,39 +208,35 @@ def test_daily_carbon_intensity_predictions_cache(mocker):
 
 
 def test_carbon_intensity_timeseries_prediction_bad_utility():
-    with pytest.raises(HTTPException):
-        message, code, cors = carbon_intensity_timeseries_prediction(
+    with pytest.raises(HTTPException) as error:
+        carbon_intensity_timeseries_prediction(
             "fish", "2020-01-01")
-        assert message == generate_standard_error_model(
-            'Invalid Utility Specified', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
 
 
 def test_carbon_intensity_timeseries_prediction_bad_date_from():
-    with pytest.raises(HTTPException):
-        message, code, cors = carbon_intensity_timeseries_prediction(
+    with pytest.raises(HTTPException) as error:
+        carbon_intensity_timeseries_prediction(
             "tepco", "fish")
-        assert message == generate_standard_error_model(
-            'Invalid FROM Date Provided', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid FROM Date Provided', 400)
 
 
 def test_carbon_intensity_timeseries_prediction_bad_date_to():
-    with pytest.raises(HTTPException):
-        message, code, cors = carbon_intensity_timeseries_prediction(
+    with pytest.raises(HTTPException) as error:
+        carbon_intensity_timeseries_prediction(
             "tepco", "2020-01-02", "fish")
-        assert message == generate_standard_error_model(
-            'Invalid TO Date Provided', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid TO Date Provided', 400)
 
 
 def test_carbon_intensity_timeseries_prediction_to_before_from():
-    with pytest.raises(HTTPException):
-        message, code, cors = carbon_intensity_timeseries_prediction(
+    with pytest.raises(HTTPException) as error:
+        message = carbon_intensity_timeseries_prediction(
             "tepco", "2020-01-02", "2020-01-01")
-        assert message == generate_standard_error_model(
-            'Invalid Query - TO Date before FROM Date', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Query - TO Date before FROM Date', 400)
 
 
 def test_carbon_intensity_timeseries_prediction_response(mocker):
@@ -256,7 +246,7 @@ def test_carbon_intensity_timeseries_prediction_response(mocker):
         return_value='xyz'
     )
 
-    body, code, cors = carbon_intensity_timeseries_prediction(
+    body = carbon_intensity_timeseries_prediction(
         "tepco", "2020-01-01")
 
     expectedData = {
@@ -298,30 +288,27 @@ def test_carbon_intensity_timeseries_prediction_cache(mocker):
 
 
 def test_carbon_intensity_historical_bad_utility():
-    with pytest.raises(HTTPException):
-        message, code, cors = historical_intensity(
+    with pytest.raises(HTTPException) as error:
+        historical_intensity(
             "fish", "2020-01-02", "2020-02-02")
-        assert message == generate_standard_error_model(
-            'Invalid Utility Specified', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid Utility Specified', 400)
 
 
 def test_carbon_intensity_historical_bad_date_from():
-    with pytest.raises(HTTPException):
-        message, code, cors = historical_intensity(
+    with pytest.raises(HTTPException) as error:
+        historical_intensity(
             "tepco", "fish")
-        assert message == generate_standard_error_model(
-            'Invalid FROM Date Provided', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid FROM Date Provided', 400)
 
 
 def test_carbon_intensity_historical_bad_date_to():
-    with pytest.raises(HTTPException):
-        message, code, cors = historical_intensity(
+    with pytest.raises(HTTPException) as error:
+        historical_intensity(
             "tepco", "2020-01-02", "fish")
-        assert message == generate_standard_error_model(
-            'Invalid TO Date Provided', 400)
-        assert code == 400
+    assert error.value.detail == generate_standard_error_model(
+        'Invalid TO Date Provided', 400)
 
 
 def test_carbon_intensity_historical_response(mocker):
@@ -331,7 +318,7 @@ def test_carbon_intensity_historical_response(mocker):
         return_value='xyz'
     )
 
-    body, code, cors = historical_intensity(
+    body = historical_intensity(
         "tepco", "2020-01-02", "2020-02-02")
 
     expectedData = {
