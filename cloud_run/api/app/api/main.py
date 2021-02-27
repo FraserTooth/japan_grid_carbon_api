@@ -40,14 +40,6 @@ BAD_YEAR = generate_standard_error_model(
     'Invalid Year Specified - must be between this year and 50 from now', 400)
 
 
-# Add CORS to All Requests
-headers = {
-    'Access-Control-Allow-Origin': '*',
-    'mimetype': 'application/json',
-    'content-type': 'application/json'
-}
-
-
 cache = {
     "tepco": {},
     "tohokuden": {},
@@ -144,7 +136,7 @@ def historical_intensity(utility, fromDate, toDate=None):
         if toDate in cache[utility]["historical_intensity"][fromDate]:
             print("Returning cache. " + utility +
                   " historical_intensity " + fromDate + "-" + toDate + ":")
-            return json.dumps(cache[utility]["historical_intensity"][fromDate][toDate]), 200, headers
+            return cache[utility]["historical_intensity"][fromDate][toDate]
     except KeyError:
         print("Not in Cache: " + utility +
               " historical_intensity " + fromDate + "-" + toDate)
@@ -164,7 +156,7 @@ def historical_intensity(utility, fromDate, toDate=None):
         response)
     response["fromCache"] = False
 
-    return json.dumps(response), 200, headers
+    return response
 
 
 @ router.get('/average/{utility}')
@@ -179,7 +171,7 @@ def daily_carbon_intensity(utility):
     # Check Cache
     if "daily_intensity" in cache[utility]:
         print("Returning cache. " + utility + " daily_intensity:")
-        return json.dumps(cache[utility]["daily_intensity"]), 200, headers
+        return cache[utility]["daily_intensity"]
 
     response['data'] = utilityClass.daily_intensity()
     response['fromCache'] = True
@@ -188,7 +180,7 @@ def daily_carbon_intensity(utility):
     cache[utility]["daily_intensity"] = copy.deepcopy(response)
     response["fromCache"] = False
 
-    return json.dumps(response), 200, headers
+    return response
 
 
 @ router.get('/average/{breakdown}/{utility}')
@@ -216,7 +208,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     if breakdown in cache[utility]:
         print("Returning cache. " + utility +
               " daily_intensity_by_" + breakdown + ":")
-        return json.dumps(cache[utility][breakdown]), 200, headers
+        return cache[utility][breakdown]
 
     response['data'] = dataSource()
     response['fromCache'] = True
@@ -225,7 +217,7 @@ def daily_carbon_intensity_with_breakdown(utility, breakdown):
     cache[utility][breakdown] = copy.deepcopy(response)
     response["fromCache"] = False
 
-    return json.dumps(response), 200, headers
+    return response
 
 
 @ router.get('/forecast/average/{year}/{utility}')
@@ -248,7 +240,7 @@ def daily_carbon_intensity_prediction(utility, year):
     # Check Cache
     if year in cache[utility]:
         print("Returning cache...")
-        return json.dumps(cache[utility][year]), 200, headers
+        return cache[utility][year]
 
     response['data'] = utilityClass.daily_intensity_prediction_for_year_by_month_and_weekday(
         year)
@@ -258,7 +250,7 @@ def daily_carbon_intensity_prediction(utility, year):
     cache[utility][year] = copy.deepcopy(response)
     response["fromCache"] = False
 
-    return json.dumps(response), 200, headers
+    return response
 
 
 @ router.get('/forecast/{utility}/{fromDate}')
@@ -285,7 +277,7 @@ def carbon_intensity_timeseries_prediction(utility, fromDate, toDate=None):
         if toDate in cache[utility]["prediction"][fromDate]:
             print("Returning cache. " + utility +
                   " prediction " + fromDate + "-" + toDate + ":")
-            return json.dumps(cache[utility]["prediction"][fromDate][toDate]), 200, headers
+            return cache[utility]["prediction"][fromDate][toDate]
     except KeyError:
         print("Not in Cache: " + utility +
               " prediction " + fromDate + "-" + toDate)
@@ -305,4 +297,4 @@ def carbon_intensity_timeseries_prediction(utility, fromDate, toDate=None):
         response)
     response["fromCache"] = False
 
-    return json.dumps(response), 200, headers
+    return response
