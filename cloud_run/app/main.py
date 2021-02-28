@@ -25,4 +25,6 @@ app.include_router(api.router)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello Bigger Applications!"}
+    return {
+        "website": "https://denkicarbon.jp/",
+    }
