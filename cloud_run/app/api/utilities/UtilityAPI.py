@@ -1,6 +1,6 @@
+from typing import List, Dict, Union
 import pandas as pd
-import requests
-import json
+from pydantic import BaseModel, create_model
 from google.cloud import bigquery
 import os
 stage = os.environ['STAGE']

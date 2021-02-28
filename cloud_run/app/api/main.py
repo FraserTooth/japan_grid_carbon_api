@@ -1,5 +1,7 @@
+from typing import List, Union, Optional, Any
+from pydantic import BaseModel
 import copy
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response, status
 from datetime import datetime
 now = datetime.now()
 
@@ -51,6 +53,35 @@ cache = {
     "kyuden": {},
     "okiden": {},
 }
+
+
+class HourRecord(BaseModel):
+    hour: str
+    carbon_intensity: float
+
+
+class DataFormat(BaseModel):
+    breakdown: str
+    data: List[HourRecord]
+
+
+class CarbonIntensityAverage(BaseModel):
+    fromCache: bool
+    carbon_intensity_average: DataFormat
+
+
+class TimestampRecord(BaseModel):
+    timestamp: datetime
+    carbon_intensity: float
+
+
+class HistoricDataFormat(BaseModel):
+    historic: List[TimestampRecord]
+
+
+class HistoricData(BaseModel):
+    fromCache: bool
+    data: HistoricDataFormat
 
 
 def clearCache(utility):
@@ -113,9 +144,9 @@ def validateDates(fromDate, toDate):
     }
 
 
-@ router.get('/historic/{utility}/{fromDate}')
-@ router.get('/historic/{utility}/{fromDate}/{toDate}')
-def historical_intensity(utility, fromDate, toDate=None):
+@ router.get('/historic/{utility}/{fromDate}', response_model=HistoricData)
+@ router.get('/historic/{utility}/{fromDate}/{toDate}', response_model=HistoricData)
+def historical_intensity(utility: str, fromDate: str, toDate: Optional[str] = None):
     response = {}
 
     # Check Utility
@@ -158,7 +189,7 @@ def historical_intensity(utility, fromDate, toDate=None):
     return response
 
 
-@ router.get('/average/{utility}')
+@ router.get('/average/{utility}', response_model=CarbonIntensityAverage)
 def daily_carbon_intensity(utility):
     response = {}
 
