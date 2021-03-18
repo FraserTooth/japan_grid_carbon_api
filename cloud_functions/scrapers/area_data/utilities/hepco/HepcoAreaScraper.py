@@ -64,10 +64,6 @@ class HepcoAreaScraper:
                 return translations[header]
             return header
 
-            if header in translations:
-                return translations[header]
-            return header
-
         def _getCSV(url):
 
             print("  -- getting:", url)
