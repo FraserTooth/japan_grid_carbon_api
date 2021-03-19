@@ -54,10 +54,6 @@ class ChudenAreaScraper:
                 return translations[header]
             return header
 
-            if header in translations:
-                return translations[header]
-            return header
-
         def _getCSV(url):
             print("  -- getting:", url)
             return pd.read_csv(url, skiprows=4, encoding="cp932",

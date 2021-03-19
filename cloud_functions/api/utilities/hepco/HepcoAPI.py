@@ -36,18 +36,22 @@ class HepcoAPI(UtilityAPI):
     def _carbon_intensity_query_string(self):
         ci = self.get_carbon_intensity_factors()
 
+        # There was an earthquake on 2018/09/06 - the data records the MWh total as 0 for one hour, which breaks the maths
         return """
-        (
-            (MWh_nuclear * {intensity_nuclear}) + 
-            (MWh_fossil * {intensity_fossil}) + 
-            (MWh_hydro * {intensity_hydro}) + 
-            (MWh_geothermal * {intensity_geothermal}) + 
-            (MWh_biomass * {intensity_biomass}) +
-            (MWh_solar_output * {intensity_solar_output}) +
-            (MWh_wind_output * {intensity_wind_output}) +
-            (MWh_pumped_storage_contribution * {intensity_pumped_storage}) +
-            (MWh_interconnector_contribution * {intensity_interconnectors}) 
-        ) / (MWh_total_generation)
+        IF(MWh_total_generation>0, 
+            (
+                (MWh_nuclear * {intensity_nuclear}) + 
+                (MWh_fossil * {intensity_fossil}) + 
+                (MWh_hydro * {intensity_hydro}) + 
+                (MWh_geothermal * {intensity_geothermal}) + 
+                (MWh_biomass * {intensity_biomass}) +
+                (MWh_solar_output * {intensity_solar_output}) +
+                (MWh_wind_output * {intensity_wind_output}) +
+                (MWh_pumped_storage_contribution * {intensity_pumped_storage}) +
+                (MWh_interconnector_contribution * {intensity_interconnectors}) 
+            ) / (MWh_total_generation), 
+            0
+        )
         """.format(
             intensity_nuclear=ci["kWh_nuclear"],
             intensity_fossil=ci["kWh_fossil"],

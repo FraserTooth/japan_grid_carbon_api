@@ -1,24 +1,23 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class HepcoAreaScraper:
+class HepcoAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
 
-        CSV_URLS = []
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/supply_demand_results.html",
+            "csv/sup_dem_results_\d{4}_\dq.csv",
+            "https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/"
+        ))
 
-        # Link Format: https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/csv/sup_dem_results_2016_1q.csv
-        for year in range(2016, 2021):
-            for quarter in range(1, 5):
-                url = "https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/csv/sup_dem_results_{year}_{quarter}q.csv".format(
-                    year=year,
-                    quarter=quarter
-                )
-                CSV_URLS.append(url)
+        # Random Excel File in the Mix, has a comment about an earthquake in 2018
+        EXCEL_URLS = list(self.get_data_urls_from_page(
+            "https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/supply_demand_results.html",
+            "xls/sup_dem_results_\d{4}_\dq.xls",
+            "https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/"
+        ))
 
         dtypes = {
             "エリア需要": "int",
@@ -37,6 +36,12 @@ class HepcoAreaScraper:
         }
 
         converters = {
+            "時刻": lambda x: (x.replace('時', ':00'))
+        }
+
+        excel_converters = {
+            # Don't interpret time as timestamp due to the need to fill forward
+            "月日": str,
             "時刻": lambda x: (x.replace('時', ':00'))
         }
 
@@ -69,7 +74,6 @@ class HepcoAreaScraper:
             print("  -- getting:", url)
             try:
                 data = pd.read_csv(url, skiprows=2, encoding="cp932",
-                                   #    parse_dates=[[0, 1]],
                                    converters=converters,
                                    skip_blank_lines=True)
             except Exception as e:
@@ -78,13 +82,33 @@ class HepcoAreaScraper:
                 return None
             return data
 
+        def _getExcel(url):
+            print("  -- getting:", url)
+            try:
+                data = pd.read_excel(url,
+                                     skiprows=2,
+                                     encoding='cp932',
+                                     converters=excel_converters,
+                                     skip_blank_lines=True
+                                     )
+            except Exception as e:
+                print("Caught error \"{error}\" at {url}".format(
+                    error=e, url=url))
+                return None
+            return data
+
         print("Reading CSVs")
 
-        dataList = map(_getCSV, CSV_URLS)
+        dataListExcel = map(_getExcel, EXCEL_URLS)
+        dfExcel = pd.concat(dataListExcel)
 
-        df = pd.concat(dataList)
+        dataList = map(_getCSV, CSV_URLS)
+        dfCSV = pd.concat(dataList)
+
+        df = pd.concat([dfExcel, dfCSV])
 
         print("Manual Conversions...")
+
         # Fill Forward Dates
         df["月日"] = df["月日"].fillna(method='ffill')
 
@@ -104,6 +128,9 @@ class HepcoAreaScraper:
         print("Renaming Columns")
         df = df.rename(columns=lambda x: _renameHeader(x), errors="raise")
 
+        df = df.sort_values(by=['datetime']).reset_index(drop=True)
+
+        print(df.info)
         return df
 
     def get_json(self):
