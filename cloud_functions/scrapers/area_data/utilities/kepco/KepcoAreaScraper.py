@@ -71,10 +71,14 @@ class KepcoAreaScraper:
             try:
                 response = requests.get(url)
 
-                file_object = io.StringIO(response.content.decode('cp932'))
+                # Replace the stubborn empty line that pandas wouldn't pick up
+                responseObject = io.StringIO(response.content.decode(
+                    'cp932').replace(',,,,,,,,,,,,\r\n', ''))
 
-                data = pd.read_csv(file_object, skiprows=1,
-                                   encoding="cp932", dtype=dtypes)
+                data = pd.read_csv(responseObject,
+                                   skiprows=1,
+                                   skip_blank_lines=True,
+                                   dtype=dtypes)
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))

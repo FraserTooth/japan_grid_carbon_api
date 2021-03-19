@@ -1,48 +1,19 @@
-import csv
-import requests
-import numpy as np
+
 import pandas as pd
-import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class RikudenAreaScraper:
+class RikudenAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
-        # CSVs change format halfway thru
-        # http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201604_06.csv
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "http://www.rikuden.co.jp/nw_jyukyudata/area_jisseki.html",
+            "\/nw_jyukyudata\/attach\/area_jisseki_rikuden\S+\.csv",
+            "http://www.rikuden.co.jp"
+        ))
 
-        CSV_URLS = [
-            # All the 3 month CSVs
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201604_06.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201607_09.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201610_12.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201701_03.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201704_06.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201707_09.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201710_12.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201801_03.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201804_06.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201807_09.csv",
-            # The first 3 singles, to get the months back to 1
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201810.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201811.csv",
-            "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201812.csv",
-        ]
-
-        for year in range(2019, 2021):
-            for month in range(1, 13):
-
-                if year == 2019 and month == 10:
-                    # Incorrectly Formatted Month
-                    CSV_URLS.append(
-                        "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden201910_01.csv")
-                    continue
-
-                url = "http://www.rikuden.co.jp/nw_jyukyudata/attach/area_jisseki_rikuden{year}{month}.csv".format(
-                    year=year,
-                    month="{:02d}".format(month)
-                )
-                CSV_URLS.append(url)
+        # Page is in a funny order
+        CSV_URLS.sort()
 
         headersList = [
             "date",
