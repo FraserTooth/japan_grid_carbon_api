@@ -21,6 +21,7 @@ fi
 
 export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/.gcloud/japan-grid-carbon-service-key-$ENV.json"
 export STAGE=$ENV
+export FUNCTION_SOURCE="$PWD/cloud_functions/main.py"
 
 echo "Locally Running Function $FUNCTION in $ENV"
 cd cloud_functions/

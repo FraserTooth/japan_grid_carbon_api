@@ -63,7 +63,7 @@ class CepcoAreaScraper:
                 return translations[header]
             return header
 
-        def _getKepcoCSV(url):
+        def _getCepcoCSV(url):
             print("  -- getting:", url)
             try:
                 data = pd.read_csv(url,
@@ -80,7 +80,7 @@ class CepcoAreaScraper:
 
         print("Reading CSVs")
 
-        dataList = map(_getKepcoCSV, CSV_URLS)
+        dataList = map(_getCepcoCSV, CSV_URLS)
 
         df = pd.concat(dataList)
 

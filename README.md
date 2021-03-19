@@ -14,7 +14,7 @@ API and Backend to Calculate the Current Carbon Intensity of the Japanese Grid..
 - Combined and extensible endpoint using Flask routing
 - Added Pytest Tests
 - Implementation of the [Serverless](https://www.serverless.com/) deployment framework
-- Basic Website Built @ [denkicarbon.jp](denkicarbon.jp) - [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website) 
+- Basic Website Built @ [denkicarbon.jp](https://denkicarbon.jp) - [Repo](https://github.com/FraserTooth/japan_grid_carbon_api_website) 
 
 ## Planned Work:
 
@@ -43,6 +43,7 @@ This project is aimed at UNIX runtimes, if you are on Windows, consider using [W
 
 **Python Bits**
 - Install Python3 to match the [current Google Cloud Functions Runtime](https://cloud.google.com/functions/docs/concepts/python-runtime)
+  - I use Python 3.8, and I use [pyenv](https://github.com/pyenv/pyenv) to manage my local versions
 - Consider using a [virtual environment](https://docs.python.org/3/tutorial/venv.html)
 - Install Pip
 - Install project dependancies
@@ -74,10 +75,17 @@ In the meantime, we can use a small average figure for the Carbon Intensity, but
 
 Data has been retrived from:
 
+- CEPCO: [Source Link](https://www.energia.co.jp/nw/service/retailer/data/area/)
+- Chuden: [Source Link](https://powergrid.chuden.co.jp/denkiyoho/)
+- HEPCO: [Source Link](https://www.hepco.co.jp/network/renewable_energy/fixedprice_purchase/supply_demand_results.html)
+- KEPCO: [Source Link](https://www.kansai-td.co.jp/denkiyoho/area-performance.html)
+- Kyuden: [Source Link](https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure)
+- Okiden: [Source Link](https://www.okiden.co.jp/business-support/service/supply-and-demand/index.html)
+- Rikuden: [Source Link](http://www.rikuden.co.jp/nw_jyukyudata/area_jisseki.html)
 - TEPCO: [Source Link](http://www.tepco.co.jp/forecast/html/area_data-j.html)
 - Tohokuden: [Source Link](https://setsuden.nw.tohoku-epco.co.jp/download.html)
-- KEPCO: [Source Link](https://www.kansai-td.co.jp/denkiyoho/area-performance.html)
-- And more...
+- Yonden: [Source Link](https://www.yonden.co.jp/nw/renewable_energy/data/supply_demand.html)
+- And some other places
 
 Example Graphs So Far:
 
@@ -88,6 +96,9 @@ Example Graphs So Far:
 ### Useful Functions Snippets
 
 ```bash
+# Create a Virtual Environment
+python -m venv .venv
+
 # Open Virtual Environment
 source .venv/bin/activate
 

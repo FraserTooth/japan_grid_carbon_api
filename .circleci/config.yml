@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   gcp-cli: circleci/gcp-cli@1.8.5
   serverless: circleci/serverless-framework@1.0.1
+  slack: circleci/slack@4.2.0
 
 jobs:
   test:
@@ -18,8 +19,12 @@ jobs:
           name: test
           command: pytest
 
-  deploy-staging:
+  deploy:
     executor: serverless/default
+    parameters:
+      stage:
+        type: string
+        default: staging
     steps:
       - checkout
 
@@ -30,8 +35,8 @@ jobs:
           command: |
             cd ${HOME}
             mkdir .gcloud 
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
-            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-staging.json
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-<< parameters.stage >>.json
+            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-<< parameters.stage >>.json
             gcloud --quiet config set project $GOOGLE_PROJECT_ID
             gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
 
@@ -57,48 +62,52 @@ jobs:
       - run:
           name: deploy
           command: |
-            ./deploy.sh staging
+            ./deploy.sh << parameters.stage >>
 
-  deploy-production:
-    executor: serverless/default
-    steps:
-      - checkout
-
-      - gcp-cli/install
-
-      - run:
-          name: Initialize gcloud CLI to connect to Google Cloud
-          command: |
-            cd ${HOME}
-            mkdir .gcloud 
-            echo $GCLOUD_SERVICE_KEY > ${HOME}/.gcloud/japan-grid-carbon-service-key-production.json
-            gcloud auth activate-service-account --key-file=${HOME}/.gcloud/japan-grid-carbon-service-key-production.json
-            gcloud --quiet config set project $GOOGLE_PROJECT_ID
-            gcloud --quiet config set compute/zone $GOOGLE_COMPUTE_ZONE
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run:
-          name: Install Serverless CLI and dependencies
-          command: |
-            cd cloud_functions/
-            sudo npm i -g serverless
-            npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-
-
-      - run:
-          name: deploy
-          command: |
-            ./deploy.sh production
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Deployment Successful! :tada:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*When*: $(date +'%m/%d/%Y %T')"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Stage*: << parameters.stage >>"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Job"
+                      },
+                      "url": "${CIRCLE_BUILD_URL}"
+                    }
+                  ]
+                }
+              ]
+            }
 
 workflows:
   build-test-and-deploy:
@@ -106,8 +115,12 @@ workflows:
       - test:
           context: japan-grid-carbon-api-staging
 
-      - deploy-staging:
-          context: japan-grid-carbon-api-staging
+      # Staging
+      - deploy:
+          context:
+            - japan-grid-carbon-api-staging
+            - DenkiCarbon-Slack
+          stage: "staging"
           requires:
             - test
           filters:
@@ -115,8 +128,12 @@ workflows:
               only:
                 - master
 
-      - deploy-production:
-          context: japan-grid-carbon-api
+      # Production
+      - deploy:
+          context:
+            - japan-grid-carbon-api
+            - DenkiCarbon-Slack
+          stage: "production"
           requires:
             - test
           filters:
