@@ -3,20 +3,20 @@ import requests
 import numpy as np
 import pandas as pd
 import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class TohokudenAreaScraper:
+class TohokudenAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
-        CSV_URLS = []
-
-        for year in range(2016, 2021):
-            for quarter in range(1, 5):
-                url = "https://setsuden.nw.tohoku-epco.co.jp/common/demand/juyo_{year}_tohoku_{quarter}Q.csv".format(
-                    year=year,
-                    quarter=quarter
-                )
-                CSV_URLS.append(url)
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://setsuden.nw.tohoku-epco.co.jp/download.html",
+            "common\/demand\/juyo_\d\d\d\d_tohoku_\dQ.csv",
+            "https://setsuden.nw.tohoku-epco.co.jp/",
+            "Shift_JIS"
+        ))
+        # Flip order
+        CSV_URLS.sort()
 
         # DATE_TIME,
         # エリア需要〔MWh〕,

@@ -15,7 +15,8 @@ class TepcoAreaScraper:
             'http://www.tepco.co.jp/forecast/html/images/area-2017.csv',
             'http://www.tepco.co.jp/forecast/html/images/area-2018.csv',
             'http://www.tepco.co.jp/forecast/html/images/area-2019.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2020.csv'
+            'http://www.tepco.co.jp/forecast/html/images/area-2020.csv',
+            'http://www.tepco.co.jp/forecast/html/images/area-2021.csv'
         ]
 
         dtypes = {

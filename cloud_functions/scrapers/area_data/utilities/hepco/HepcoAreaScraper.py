@@ -130,7 +130,6 @@ class HepcoAreaScraper(UtilityAreaScraper):
 
         df = df.sort_values(by=['datetime']).reset_index(drop=True)
 
-        print(df.info)
         return df
 
     def get_json(self):
