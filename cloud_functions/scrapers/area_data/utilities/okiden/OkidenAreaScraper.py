@@ -14,6 +14,7 @@ class OkidenAreaScraper:
             'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2018.csv',
             'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2019.csv',
             'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2020.csv',
+            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2021.csv',
         ]
 
         # DATE,

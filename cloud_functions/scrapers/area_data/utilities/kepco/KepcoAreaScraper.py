@@ -14,6 +14,7 @@ class KepcoAreaScraper:
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2018.csv',
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2019.csv',
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2020.csv',
+            'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2021.csv',
         ]
 
         # DATE_TIME,

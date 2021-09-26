@@ -14,6 +14,7 @@ class YondenAreaScraper:
             'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2018.xlsx',
             'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2019.xlsx',
             'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2020.xlsx',
+            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2021.xlsx',
         ]
 
         # ---- Order of Columns ----

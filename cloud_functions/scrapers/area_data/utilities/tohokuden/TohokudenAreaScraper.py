@@ -1,22 +1,19 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
+from func_timeout import func_timeout, FunctionTimedOut
 
 
-class TohokudenAreaScraper:
+class TohokudenAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
-        CSV_URLS = []
-
-        for year in range(2016, 2021):
-            for quarter in range(1, 5):
-                url = "https://setsuden.nw.tohoku-epco.co.jp/common/demand/juyo_{year}_tohoku_{quarter}Q.csv".format(
-                    year=year,
-                    quarter=quarter
-                )
-                CSV_URLS.append(url)
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://setsuden.nw.tohoku-epco.co.jp/download.html",
+            "common\/demand\/juyo_\d\d\d\d_tohoku_\dQ.csv",
+            "https://setsuden.nw.tohoku-epco.co.jp/",
+            "Shift_JIS"
+        ))
+        # Flip order
+        CSV_URLS.sort()
 
         # DATE_TIME,
         # エリア需要〔MWh〕,
@@ -68,11 +65,17 @@ class TohokudenAreaScraper:
                 return translations[header]
             return header
 
+        def _get_file(url: str):
+            return pd.read_csv(
+                url, skiprows=0, encoding="cp932", dtype=dtypes)
+
         def _getTohokudenCSV(url):
             print("  -- getting:", url)
             try:
-                data = pd.read_csv(
-                    url, skiprows=0, encoding="cp932", dtype=dtypes)
+                data = func_timeout(5, _get_file, kwargs={"url": url})
+            except FunctionTimedOut as e:
+                print(f"Timeout on {url} - retrying...")
+                return _getTohokudenCSV(url)
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
