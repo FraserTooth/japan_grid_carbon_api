@@ -1,8 +1,4 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
 from ..UtilityAreaScraper import UtilityAreaScraper
 
 
@@ -83,19 +79,18 @@ class KyudenAreaScraper(UtilityAreaScraper):
             "MWh_interconnectors": lambda x: (x.replace(',', '')),
         }
 
-        def _getCSV(url):
+        def _getKyudenCSV(url: str):
             print("  -- getting:", url)
             try:
-                data = pd.read_csv(
-                    url,
-                    skiprows=2,
-                    encoding="cp932",
-                    header=None,
-                    parse_dates=[0],
-                    names=headersList,
-                    usecols=range(len(headersList)),
-                    converters=converters
-                )
+                data = self.get_csv_with_timeout(url, scrapeKwargs={
+                        "skiprows":2,
+                        "encoding":"cp932",
+                        "header":None,
+                        "parse_dates":[0],
+                        "names":headersList,
+                        "usecols":range(len(headersList)),
+                        "converters":converters
+                    })
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
@@ -106,7 +101,7 @@ class KyudenAreaScraper(UtilityAreaScraper):
 
         print("Reading CSVs")
 
-        dataList = map(_getCSV, CSV_URLS)
+        dataList = map(_getKyudenCSV, CSV_URLS)
 
         df = pd.concat(dataList)
         df = df.reset_index(drop=True)
