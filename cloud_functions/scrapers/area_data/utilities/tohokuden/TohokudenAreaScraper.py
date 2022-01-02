@@ -1,6 +1,5 @@
 import pandas as pd
 from ..UtilityAreaScraper import UtilityAreaScraper
-from func_timeout import func_timeout, FunctionTimedOut
 
 
 class TohokudenAreaScraper(UtilityAreaScraper):
@@ -65,17 +64,14 @@ class TohokudenAreaScraper(UtilityAreaScraper):
                 return translations[header]
             return header
 
-        def _get_file(url: str):
-            return pd.read_csv(
-                url, skiprows=0, encoding="cp932", dtype=dtypes)
-
         def _getTohokudenCSV(url):
             print("  -- getting:", url)
             try:
-                data = func_timeout(5, _get_file, kwargs={"url": url})
-            except FunctionTimedOut as e:
-                print(f"Timeout on {url} - retrying...")
-                return _getTohokudenCSV(url)
+                data = self.get_csv_with_timeout(url, scrapeKwargs={
+                        "skiprows":0,
+                        "encoding":"cp932",
+                        "dtype":dtypes,
+                    })
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
                     error=e, url=url))
