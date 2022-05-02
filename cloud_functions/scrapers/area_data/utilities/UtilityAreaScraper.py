@@ -1,4 +1,4 @@
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 import pandas as pd
 import re
 from func_timeout import func_timeout, FunctionTimedOut
@@ -6,7 +6,8 @@ from func_timeout import func_timeout, FunctionTimedOut
 
 class UtilityAreaScraper:
     def get_data_urls_from_page(self, page_url: str, csv_link_regex_pattern, csv_base_url: str, charset: str ="utf-8"):
-        page = urlopen(page_url)
+        r = Request(page_url, headers={'User-Agent': 'Mozilla/5.0'})
+        page = urlopen(r)
         html_bytes = page.read()
         html = html_bytes.decode(charset)
 
