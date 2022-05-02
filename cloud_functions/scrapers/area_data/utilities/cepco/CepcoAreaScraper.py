@@ -1,12 +1,8 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
-import io
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class CepcoAreaScraper:
+class CepcoAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
         CSV_URLS = [
             'https://www.energia.co.jp/nw/service/retailer/eriajyukyu/sys/eria_jyukyu.csv'

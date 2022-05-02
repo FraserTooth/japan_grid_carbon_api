@@ -1,23 +1,19 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class TepcoAreaScraper:
+class TepcoAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
         CSV_URL_DAILY = 'https://www.tepco.co.jp/forecast/html/images/juyo-d-j.csv'
 
-        CSV_URLS = [
-            'http://www.tepco.co.jp/forecast/html/images/area-2016.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2017.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2018.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2019.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2020.csv',
-            'http://www.tepco.co.jp/forecast/html/images/area-2021.csv'
-        ]
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://www.tepco.co.jp/forecast/html/area_data-j.html",
+            "area-20\d\d.csv",
+            "http://www.tepco.co.jp/forecast/html/images/"
+        ))
+        # Flip order
+        CSV_URLS.sort()
 
         dtypes = {
             "Unnamed: 2": int,

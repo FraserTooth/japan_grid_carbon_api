@@ -1,21 +1,16 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
-import io
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class OkidenAreaScraper:
+class OkidenAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
-        CSV_URLS = [
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2016.csv',
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2017.csv',
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2018.csv',
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2019.csv',
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2020.csv',
-            'https://www.okiden.co.jp/business-support/service/supply-and-demand/jukyu/csv/2021.csv',
-        ]
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://www.okiden.co.jp/business-support/service/supply-and-demand/index.html",
+            "jukyu/csv/20\d\d.csv",
+            "https://www.okiden.co.jp/business-support/service/supply-and-demand/"
+        ))
+        # Flip order
+        CSV_URLS.sort()
 
         # DATE,
         # TIME,

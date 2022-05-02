@@ -1,13 +1,12 @@
-import csv
 import requests
-import numpy as np
 import pandas as pd
-import datetime
 import io
+from ..UtilityAreaScraper import UtilityAreaScraper
 
-
-class KepcoAreaScraper:
+class KepcoAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
+        # CSV list is loaded into the HTML after page load, so basic HTML scraping wont work...
+        # its just one CSV per year tho, so this list isn't so bad.
         CSV_URLS = [
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2016.csv',
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2017.csv',
