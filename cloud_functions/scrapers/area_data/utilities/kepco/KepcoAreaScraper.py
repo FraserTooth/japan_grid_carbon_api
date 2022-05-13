@@ -1,13 +1,13 @@
-import csv
 import requests
-import numpy as np
 import pandas as pd
-import datetime
 import io
+import re
+from ..UtilityAreaScraper import UtilityAreaScraper
 
-
-class KepcoAreaScraper:
+class KepcoAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
+        # CSV list is loaded into the HTML after page load, so basic HTML scraping wont work...
+        # its just one CSV per year tho, so this list isn't so bad.
         CSV_URLS = [
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2016.csv',
             'https://www.kansai-td.co.jp/denkiyoho/csv/area_jyukyu_jisseki_2017.csv',
@@ -72,11 +72,18 @@ class KepcoAreaScraper:
             try:
                 response = requests.get(url)
 
-                # Replace the stubborn empty line that pandas wouldn't pick up
-                responseObject = io.StringIO(response.content.decode(
-                    'cp932').replace(',,,,,,,,,,,,\r\n', ''))
+                response_content = response.content.decode(
+                    'cp932')
 
-                data = pd.read_csv(responseObject,
+                # Replace the stubborn empty line that pandas wouldn't pick up
+                response_content = response_content.replace(',,,,,,,,,,,,\r\n', '')
+
+                # Fix the occasional "10,000" formatted numbers
+                pattern = r'"(\d+?),(\d+?)"'
+                replacement = r'\1\2'
+                response_content = re.sub(pattern, replacement, response_content)
+
+                data = pd.read_csv(io.StringIO(response_content),
                                    skiprows=1,
                                    skip_blank_lines=True,
                                    dtype=dtypes)

@@ -1,13 +1,12 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
+from ..UtilityAreaScraper import UtilityAreaScraper
 
 
-class ChudenAreaScraper:
+class ChudenAreaScraper(UtilityAreaScraper):
 
     def _parseCsvs(self):
+        # Website is some kind of SPA so basic HTML regex doesn't work, 
+        # its just one CSV per year tho, so this list isn't so bad.
         CSV_URLS = [
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2016_areabalance_current_term.csv',
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2017_areabalance_current_term.csv',
@@ -15,6 +14,7 @@ class ChudenAreaScraper:
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2019_areabalance_current_term.csv',
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2020_areabalance_current_term.csv',
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2021_areabalance_current_term.csv',
+            'https://powergrid.chuden.co.jp/denki_yoho_content_data/2022_areabalance_current_term.csv',
         ]
 
         dtypes = {
