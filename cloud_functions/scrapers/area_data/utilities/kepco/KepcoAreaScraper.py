@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import io
+import re
 from ..UtilityAreaScraper import UtilityAreaScraper
 
 class KepcoAreaScraper(UtilityAreaScraper):
@@ -71,11 +72,18 @@ class KepcoAreaScraper(UtilityAreaScraper):
             try:
                 response = requests.get(url)
 
-                # Replace the stubborn empty line that pandas wouldn't pick up
-                responseObject = io.StringIO(response.content.decode(
-                    'cp932').replace(',,,,,,,,,,,,\r\n', ''))
+                response_content = response.content.decode(
+                    'cp932')
 
-                data = pd.read_csv(responseObject,
+                # Replace the stubborn empty line that pandas wouldn't pick up
+                response_content = response_content.replace(',,,,,,,,,,,,\r\n', '')
+
+                # Fix the occasional "10,000" formatted numbers
+                pattern = r'"(\d+?),(\d+?)"'
+                replacement = r'\1\2'
+                response_content = re.sub(pattern, replacement, response_content)
+
+                data = pd.read_csv(io.StringIO(response_content),
                                    skiprows=1,
                                    skip_blank_lines=True,
                                    dtype=dtypes)
