@@ -1,12 +1,21 @@
+import io
+import requests
 import pandas as pd
 from ..UtilityAreaScraper import UtilityAreaScraper
 
-
 class CepcoAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
-        CSV_URLS = [
-            'https://www.energia.co.jp/nw/service/retailer/eriajyukyu/sys/eria_jyukyu.csv'
-        ]
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://www.energia.co.jp/nw/service/retailer/data/area/",
+            r'csv/kako-\d{4}.csv',
+            "https://www.energia.co.jp/nw/service/retailer/data/area/"
+        ))
+        # Flip order
+        CSV_URLS.sort()
+        # Remove the most recent historical one, mirrored in the data
+        CSV_URLS.pop()
+        # Add the "last 2 years" one
+        CSV_URLS.append('https://www.energia.co.jp/nw/service/retailer/eriajyukyu/sys/eria_jyukyu.csv')
 
         # DATE
         # TIME
@@ -61,12 +70,22 @@ class CepcoAreaScraper(UtilityAreaScraper):
 
         def _getCepcoCSV(url):
             print("  -- getting:", url)
+
+            response = requests.get(url)
+
+            response_content = response.content.decode(
+                'cp932')
+
+            # Replace the stubborn empty line that pandas wouldn't pick up
+            response_content = response_content.replace(',,,,,,,,,,,,,', '')
+
             try:
-                data = pd.read_csv(url,
+                data = pd.read_csv(io.StringIO(response_content),
                                    skiprows=2,
                                    encoding="cp932",
                                    parse_dates=[[0, 1]],
-                                   dtype=dtypes
+                                   dtype=dtypes,
+                                   skip_blank_lines=True
                                    )
             except Exception as e:
                 print("Caught error \"{error}\" at {url}".format(
