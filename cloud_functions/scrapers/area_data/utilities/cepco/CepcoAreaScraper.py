@@ -12,8 +12,6 @@ class CepcoAreaScraper(UtilityAreaScraper):
         ))
         # Flip order
         CSV_URLS.sort()
-        # Remove the most recent historical one, mirrored in the data
-        CSV_URLS.pop()
         # Add the "last 2 years" one
         CSV_URLS.append('https://www.energia.co.jp/nw/service/retailer/eriajyukyu/sys/eria_jyukyu.csv')
 
