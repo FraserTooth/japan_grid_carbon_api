@@ -1,21 +1,15 @@
-import csv
-import requests
-import numpy as np
 import pandas as pd
-import datetime
-import io
+from ..UtilityAreaScraper import UtilityAreaScraper
 
-
-class YondenAreaScraper:
+class YondenAreaScraper(UtilityAreaScraper):
     def _parseCsvs(self):
-        CSV_URLS = [
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2016.xlsx',
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2017.xlsx',
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2018.xlsx',
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2019.xlsx',
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2020.xlsx',
-            'https://www.yonden.co.jp/nw/assets/renewable_energy/data/supply_demand/jukyu2021.xlsx',
-        ]
+        CSV_URLS = list(self.get_data_urls_from_page(
+            "https://www.yonden.co.jp/nw/renewable_energy/data/supply_demand.html",
+            "supply_demand/jukyu20\d\d.xlsx",
+            "https://www.yonden.co.jp/nw/assets/renewable_energy/data/",
+        ))
+        # Flip Order
+        CSV_URLS.sort()
 
         # ---- Order of Columns ----
         # DATE
