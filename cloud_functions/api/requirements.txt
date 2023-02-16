@@ -55,6 +55,6 @@ six==1.15.0
 toml==0.10.1
 urllib3==1.26.5
 watchdog==0.10.3
-Werkzeug==1.0.1
+Werkzeug==2.2.3
 xlrd==1.2.0
 zipp==3.1.0
