@@ -15,6 +15,7 @@ class ChudenAreaScraper(UtilityAreaScraper):
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2020_areabalance_current_term.csv',
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2021_areabalance_current_term.csv',
             'https://powergrid.chuden.co.jp/denki_yoho_content_data/2022_areabalance_current_term.csv',
+            'https://powergrid.chuden.co.jp/denki_yoho_content_data/2023_areabalance_current_term.csv',
         ]
 
         dtypes = {
