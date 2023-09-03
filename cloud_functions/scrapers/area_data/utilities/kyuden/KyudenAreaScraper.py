@@ -15,7 +15,7 @@ class KyudenAreaScraper(UtilityAreaScraper):
 
         CSV_URLS = self.get_data_urls_from_page(
             "https://www.kyuden.co.jp/td_service_wheeling_rule-document_disclosure",
-            "\/var\/rev0\/\d{4}\/\d{4}\/area_jyukyu_jisseki\S+\.csv",
+            "\/var\/rev0\/\d{4}\/\d{4}\/area_{1,2}jyukyu_{1,2}jisseki\S+\.csv",
             "https://www.kyuden.co.jp"
         )
 
