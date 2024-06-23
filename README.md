@@ -1,3 +1,8 @@
+# [DEPRECIATED]
+This repo has been depreciated and rebuilt in the new [Denki Carbon repo](https://github.com/FraserTooth/denki-carbon) 
+
+![No Maintenance Intended](https://img.shields.io/maintenance/no/2019.svg)
+
 # 🔌 japan_grid_carbon_api 🔌
 ## aka Denki Carbon
 
